@@ -35,39 +35,42 @@
     </div>
 
     <script>
-        const socket = io({
-    transports: ['polling'], // Принудительно используем самый простой способ связи (HTTP), он стабильнее в туннелях
-    upgrade: false // Запрещаем пытаться "улучшить" связь до вебсокетов (они часто блокируются бесплатными туннелями)
-        });
-        let selectedAvatarFile = "1.png"; // Значение по умолчанию
+        // Инициализация сокета (автоматический выбор транспорта)
+        const socket = io(); 
+        
+        // Переменная для хранения имени файла аватарки (по умолчанию 1.png)
+        let currentAvatar = "1.png";
 
         function selectAvatar(element) {
             // Убираем выделение со всех
             document.querySelectorAll('.avatar-list img').forEach(img => img.classList.remove('selected'));
-            // Выделяем нажатый
+            // Добавляем выделение нажатому
             element.classList.add('selected');
             // Запоминаем имя файла из атрибута data-val
-            selectedAvatarFile = element.getAttribute('data-val');
+            currentAvatar = element.getAttribute('data-val');
         }
 
         function joinGame() {
-            const name = document.getElementById('username').value;
-            
+            const nameField = document.getElementById('username');
+            const name = nameField.value;
+
             if (name.trim() === "") {
                 alert("Пожалуйста, введи имя!");
                 return;
             }
 
-            // ВАЖНО: Мы отправляем данные на сервер, а не просто переходим
-            socket.emit('join_request', { name: name, avatar: selectedAvatarFile });
+            // Отправляем запрос на вход
+            socket.emit('join_request', { name: name, avatar: currentAvatar });
         }
 
-        // Если сервер пустил, он пришлет команду redirect
+        // Ответ сервера: "Вход разрешен"
         socket.on('redirect', function(data) {
-            // Сохраняем имя и АВАТАРКУ в память браузера
-            localStorage.setItem('my_name', document.getElementById('username').value);
-            localStorage.setItem('my_avatar', selectedAvatarFile); // <--- ВОТ ЭТА ВАЖНАЯ СТРОКА
+            // 1. Сохраняем данные в память браузера
+            const name = document.getElementById('username').value;
+            localStorage.setItem('my_name', name);
+            localStorage.setItem('my_avatar', currentAvatar);
             
+            // 2. Переходим на страницу лобби
             window.location.href = data.url;
         });
     </script>
