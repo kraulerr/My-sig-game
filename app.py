@@ -20,22 +20,25 @@ def lobby():
 
 @socketio.on('join_request')
 def handle_join(data):
-    # Получаем данные от игрока
     player_name = data['name']
     player_avatar = data['avatar']
     
-    # Записываем его в словарь на сервере
     PLAYERS[request.sid] = {
         'name': player_name, 
         'avatar': player_avatar,
         'score': 0
     }
     
-    print(f"Подключился: {player_name}. Игроков: {len(PLAYERS)}")
+    print(f"Подключился: {player_name}. Всего: {len(PLAYERS)}")
     
-    # 1. Отправляем игрока на страницу лобби
+    # Отправляем редирект ТОЛЬКО если запрос пришел НЕ со страницы лобби
+    # Но так как мы не знаем откуда, просто отправим 'redirect', 
+    # а клиент сам решит (в index.html он слушает это событие, а в lobby.html - НЕТ).
     emit('redirect', {'url': url_for('lobby')}, to=request.sid)
-
+    
+    # И сразу всем обновляем список (чтобы в лобби появились иконки)
+    emit('update_player_list', PLAYERS, broadcast=True)
+    
 @socketio.on('get_players')
 def handle_get_players():
     # Отправляем всем (broadcast=True) список игроков, чтобы они увидели новенького
