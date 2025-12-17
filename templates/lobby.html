@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лобби игры</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { background: #1a1a2e; color: white; font-family: sans-serif; text-align: center; }
+        .container { width: 80%; margin: 0 auto; }
+        .player-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px; }
+        .player-card { background: #16213e; padding: 15px; border-radius: 10px; width: 150px; text-align: center; border: 2px solid #0f3460; }
+        .player-card img { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; }
+        .player-name { font-weight: bold; font-size: 1.2em; color: #e94560; }
+        .player-score { color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Комната ожидания</h1>
+        <h3>Игроки онлайн:</h3>
+        
+        <div id="players-container" class="player-grid">
+            <!-- Сюда JavaScript будет добавлять карточки игроков -->
+        </div>
+    </div>
+
+    <script>
+            const socket = io({
+            transports: ['polling'], // Принудительно используем самый простой способ связи (HTTP), он стабильнее в туннелях
+            upgrade: false // Запрещаем пытаться "улучшить" связь до вебсокетов (они часто блокируются бесплатными туннелями)
+        });
+
+        // Как только зашли в лобби — просим у сервера список всех игроков
+        socket.emit('get_players');
+
+        // Сервер присылает обновленный список
+        socket.on('update_player_list', function(players) {
+            const container = document.getElementById('players-container');
+            container.innerHTML = ''; // Очищаем старое
+            
+            for (let id in players) {
+                let p = players[id];
+                let card = `
+                    <div class="player-card">
+                        <img src="/static/images/avatars/${p.avatar}">
+                        <div class="player-name">${p.name}</div>
+                        <div class="player-score">Очки: ${p.score}</div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            }
+        });
+    </script>
+</body>
+</html>

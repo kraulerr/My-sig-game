@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в Свою Игру</title>
+    <!-- Подключаем библиотеку Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { background: #1a1a2e; color: white; font-family: sans-serif; text-align: center; }
+        .setup-container { width: 300px; margin: 50px auto; background: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        h2 { color: #e94560; }
+        input { width: 90%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: none; font-size: 16px; }
+        .avatar-list { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .avatar-list img { width: 60px; height: 60px; cursor: pointer; border: 3px solid transparent; border-radius: 50%; transition: transform 0.2s; }
+        .avatar-list img:hover { transform: scale(1.1); }
+        .avatar-list img.selected { border-color: #e94560; box-shadow: 0 0 10px #e94560; }
+        button { background: #e94560; color: white; border: none; padding: 10px 20px; cursor: pointer; width: 100%; border-radius: 5px; font-size: 18px; font-weight: bold; }
+        button:hover { background: #c72c41; }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <h2>Кто ты, воин?</h2>
+        <input type="text" id="username" placeholder="Введи своё имя">
+        
+        <p>Выбери аватар:</p>
+        <div class="avatar-list">
+            <!-- data-val нужен, чтобы скрипт знал имя файла -->
+            <img src="/static/images/avatars/1.png" data-val="1.png" onclick="selectAvatar(this)" class="selected">
+            <img src="/static/images/avatars/2.png" data-val="2.png" onclick="selectAvatar(this)">
+            <img src="/static/images/avatars/3.png" data-val="3.png" onclick="selectAvatar(this)">
+        </div>
+
+        <button onclick="joinGame()">Войти в лобби</button>
+    </div>
+
+    <script>
+        const socket = io({
+    transports: ['polling'], // Принудительно используем самый простой способ связи (HTTP), он стабильнее в туннелях
+    upgrade: false // Запрещаем пытаться "улучшить" связь до вебсокетов (они часто блокируются бесплатными туннелями)
+        });
+        let selectedAvatarFile = "1.png"; // Значение по умолчанию
+
+        function selectAvatar(element) {
+            // Убираем выделение со всех
+            document.querySelectorAll('.avatar-list img').forEach(img => img.classList.remove('selected'));
+            // Выделяем нажатый
+            element.classList.add('selected');
+            // Запоминаем имя файла из атрибута data-val
+            selectedAvatarFile = element.getAttribute('data-val');
+        }
+
+        function joinGame() {
+            const name = document.getElementById('username').value;
+            
+            if (name.trim() === "") {
+                alert("Пожалуйста, введи имя!");
+                return;
+            }
+
+            // ВАЖНО: Мы отправляем данные на сервер, а не просто переходим
+            socket.emit('join_request', { name: name, avatar: selectedAvatarFile });
+        }
+
+        // Если сервер пустил, он пришлет команду redirect
+        socket.on('redirect', function(data) {
+            // Сохраняем имя локально на всякий случай (для восстановления при обрыве)
+            localStorage.setItem('my_name', document.getElementById('username').value);
+            window.location.href = data.url;
+        });
+    </script>
+</body>
+</html>
