@@ -64,8 +64,10 @@
 
         // Если сервер пустил, он пришлет команду redirect
         socket.on('redirect', function(data) {
-            // Сохраняем имя локально на всякий случай (для восстановления при обрыве)
+            // Сохраняем имя и АВАТАРКУ в память браузера
             localStorage.setItem('my_name', document.getElementById('username').value);
+            localStorage.setItem('my_avatar', selectedAvatarFile); // <--- ВОТ ЭТА ВАЖНАЯ СТРОКА
+            
             window.location.href = data.url;
         });
     </script>
