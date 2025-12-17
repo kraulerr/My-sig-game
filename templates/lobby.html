@@ -17,51 +17,146 @@
 <body>
     <div class="container">
         <h1>Комната ожидания</h1>
-        <h3>Игроки онлайн:</h3>
         
-        <div id="players-container" class="player-grid">
-            <!-- Сюда JavaScript будет добавлять карточки игроков -->
+        <!-- Таймер обратного отсчета (скрыт по умолчанию) -->
+        <div id="countdown-box" style="display:none; color: #e94560; font-size: 24px; margin-bottom: 20px;">
+            Игра начнется через: <span id="timer">10</span> сек.
+        </div>
+
+        <div id="players-container" class="player-grid"></div>
+
+        <div class="controls" style="margin-top: 40px;">
+            <!-- Кнопка "Я Готoв" (для всех) -->
+            <button id="btn-ready" onclick="toggleReady()" style="background: #444; color: white; padding: 15px 30px; font-size: 18px; border: none; cursor: pointer; border-radius: 5px; margin-right: 10px;">
+                Я ГОТОВ ✅
+            </button>
+
+            <!-- Панель Админа (скрыта, покажет JS если ты админ) -->
+            <div id="admin-panel" style="display:none; margin-top: 20px; border-top: 1px solid #444; padding-top: 20px;">
+                <h3 style="color: #e94560;">Панель Ведущего</h3>
+                <button onclick="forceStart()" style="background: #e94560; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px;">
+                    ПРИНУДИТЕЛЬНЫЙ СТАРТ 🚀
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Включаем сокеты
         const socket = io();
+        let mySocketId = null; // Чтобы знать, кто Я
+        let countdownInterval = null;
 
-        // 1. При загрузке страницы СРАЗУ достаем данные из памяти
+        // ... (тут код восстановления соединения как раньше) ...
         const myName = localStorage.getItem('my_name');
         const myAvatar = localStorage.getItem('my_avatar');
+        if (!myName || !myAvatar) window.location.href = "/";
+        else socket.emit('join_request', { name: myName, avatar: myAvatar });
 
-        // Если данных нет (кто-то зашел напрямую по ссылке) — выкидываем на вход
-        if (!myName || !myAvatar) {
-            window.location.href = "/";
-        } else {
-            // 2. Снова "региструемся" на сервере (тихо, без редиректа)
-            socket.emit('join_request', { name: myName, avatar: myAvatar });
-        }
 
-        // Запрашиваем список всех игроков
-        socket.emit('get_players');
-
-        // Слушаем обновление списка
         socket.on('update_player_list', function(players) {
             const container = document.getElementById('players-container');
-            container.innerHTML = ''; 
+            const adminPanel = document.getElementById('admin-panel');
+            const btnReady = document.getElementById('btn-ready');
+            container.innerHTML = '';
             
+            // Находим мой ID (по имени, грубо, но для прототипа сойдет)
+            // В идеале сервер должен присылать "твой ID", но SocketIO это делает хитро.
+            // Пока будем отрисовывать всех.
+            
+            // Пробегаемся по игрокам, чтобы найти СЕБЯ и понять, Админ ли я
+            // Внимание: socket.id меняется при переподключении, поэтому надежнее
+            // ориентироваться на флаг is_admin внутри объекта игрока, 
+            // но мы пока не знаем, какой из объектов в players - это МЫ.
+            // Упрощение: сервер присылает словарь по ID сокетов.
+            
+            // Хитрость: мы можем попросить сервер сказать нам наш ID отдельно,
+            // но пока сделаем отрисовку "в лоб".
+            
+            // Рисуем карточки
             for (let id in players) {
                 let p = players[id];
-                // Добавляем проверку, чтобы не выводило undefined
-                if (p.name && p.avatar) {
-                    let card = `
-                        <div class="player-card">
-                            <img src="/static/images/avatars/${p.avatar}">
-                            <div class="player-name">${p.name}</div>
-                            <div class="player-score">Очки: ${p.score}</div>
-                        </div>
-                    `;
-                    container.innerHTML += card;
+                let isMe = (p.name === myName); // Проверка "Это я?"
+                
+                // Если я Админ, показываем панель
+                if (isMe && p.is_admin) {
+                    adminPanel.style.display = 'block';
+                }
+
+                // Статус готовности (Зеленая рамка или серая)
+                let borderStyle = p.is_ready ? "4px solid #4CAF50" : "2px solid #0f3460";
+                let statusIcon = p.is_ready ? "✅" : "⏳";
+                
+                // Кнопка кика (показываем всем, если ТЫ админ, но не на себе)
+                // Для этого нам надо точно знать, что Я - админ.
+                // Давайте упростим: кнопку кика рисуем, но сработает она только у админа.
+                // А лучше: добавим в CSS класс .kick-btn и покажем его JS-ом.
+                
+                let kickButton = '';
+                // (Это хак: мы покажем кнопку всем, но работать она будет только у админа, 
+                // сервер проверит. В идеале скрывать CSS-ом).
+                if (!isMe) { 
+                    kickButton = `<button onclick="kickPlayer('${id}')" style="background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; position:absolute; top:-10px; right:-10px; cursor:pointer;">X</button>`;
+                }
+
+                let card = `
+                    <div class="player-card" style="border: ${borderStyle}; position: relative;">
+                        ${kickButton}
+                        <img src="/static/images/avatars/${p.avatar}">
+                        <div class="player-name">${p.name} ${p.is_admin ? "👑" : ""}</div>
+                        <div class="player-status">${statusIcon}</div>
+                    </div>
+                `;
+                container.innerHTML += card;
+                
+                // Обновляем текст СВОЕЙ кнопки
+                if (isMe) {
+                    btnReady.innerText = p.is_ready ? "НЕ ГОТОВ ❌" : "Я ГОТОВ ✅";
+                    btnReady.style.background = p.is_ready ? "#555" : "#4CAF50";
                 }
             }
+        });
+
+        // --- ФУНКЦИИ ---
+        function toggleReady() {
+            socket.emit('toggle_ready');
+        }
+        
+        function forceStart() {
+            if(confirm("Запустить игру принудительно?")) {
+                socket.emit('force_start');
+            }
+        }
+        
+        function kickPlayer(id) {
+            if(confirm("Выгнать этого игрока?")) {
+                socket.emit('kick_player', {target_id: id});
+            }
+        }
+
+        // --- ТАЙМЕРЫ ---
+        socket.on('start_timer_signal', function(data) {
+            document.getElementById('countdown-box').style.display = 'block';
+            let sec = data.seconds;
+            document.getElementById('timer').innerText = sec;
+            
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                sec--;
+                document.getElementById('timer').innerText = sec;
+                if (sec <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        });
+
+        socket.on('stop_timer_signal', function() {
+            document.getElementById('countdown-box').style.display = 'none';
+            if (countdownInterval) clearInterval(countdownInterval);
+        });
+        
+        socket.on('redirect_to_game', function(data) {
+             window.location.href = data.url;
         });
     </script>
 </body>
