@@ -25,29 +25,42 @@
     </div>
 
     <script>
-            const socket = io({
-            transports: ['polling'], // Принудительно используем самый простой способ связи (HTTP), он стабильнее в туннелях
-            upgrade: false // Запрещаем пытаться "улучшить" связь до вебсокетов (они часто блокируются бесплатными туннелями)
-        });
+        // Включаем сокеты
+        const socket = io();
 
-        // Как только зашли в лобби — просим у сервера список всех игроков
+        // 1. При загрузке страницы СРАЗУ достаем данные из памяти
+        const myName = localStorage.getItem('my_name');
+        const myAvatar = localStorage.getItem('my_avatar');
+
+        // Если данных нет (кто-то зашел напрямую по ссылке) — выкидываем на вход
+        if (!myName || !myAvatar) {
+            window.location.href = "/";
+        } else {
+            // 2. Снова "региструемся" на сервере (тихо, без редиректа)
+            socket.emit('join_request', { name: myName, avatar: myAvatar });
+        }
+
+        // Запрашиваем список всех игроков
         socket.emit('get_players');
 
-        // Сервер присылает обновленный список
+        // Слушаем обновление списка
         socket.on('update_player_list', function(players) {
             const container = document.getElementById('players-container');
-            container.innerHTML = ''; // Очищаем старое
+            container.innerHTML = ''; 
             
             for (let id in players) {
                 let p = players[id];
-                let card = `
-                    <div class="player-card">
-                        <img src="/static/images/avatars/${p.avatar}">
-                        <div class="player-name">${p.name}</div>
-                        <div class="player-score">Очки: ${p.score}</div>
-                    </div>
-                `;
-                container.innerHTML += card;
+                // Добавляем проверку, чтобы не выводило undefined
+                if (p.name && p.avatar) {
+                    let card = `
+                        <div class="player-card">
+                            <img src="/static/images/avatars/${p.avatar}">
+                            <div class="player-name">${p.name}</div>
+                            <div class="player-score">Очки: ${p.score}</div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                }
             }
         });
     </script>
