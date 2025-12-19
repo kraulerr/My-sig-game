@@ -5,158 +5,256 @@
     <title>Лобби игры</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-        body { background: #1a1a2e; color: white; font-family: sans-serif; text-align: center; }
-        .container { width: 80%; margin: 0 auto; }
-        .player-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px; }
-        .player-card { background: #16213e; padding: 15px; border-radius: 10px; width: 150px; text-align: center; border: 2px solid #0f3460; }
-        .player-card img { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; }
-        .player-name { font-weight: bold; font-size: 1.2em; color: #e94560; }
-        .player-score { color: #ccc; }
+        body { background: #1a1a2e; color: white; font-family: sans-serif; margin: 0; }
+        h1 { text-align: center; margin-top: 20px; color: #e94560; }
+
+        .players-container {
+            width: 60%;
+            margin: 20px auto;
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .admin-mark {
+            margin-left: 5px;
+            color: gold;
+        }
+
+        .status-label {
+            font-size: 14px;
+            color: #0fba81;
+            margin-left: 8px;
+        }
+
+        .status-not-ready {
+            color: #e9c46a;
+        }
+
+        .kick-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .kick-btn:hover {
+            background: #c72c41;
+        }
+
+        .ready-btn {
+            margin: 20px auto;
+            display: block;
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #0fba81;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .ready-btn.not-ready {
+            background: #e94560;
+        }
+
+        .timer-bar {
+            width: 60%;
+            margin: 10px auto;
+            height: 20px;
+            background: #2b2b3f;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: #e94560;
+            transition: width 1s linear;
+        }
+
+        .host-panel {
+            width: 60%;
+            margin: 20px auto;
+            text-align: center;
+            color: #e94560;
+        }
+
+        .force-start-btn {
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .force-start-btn:hover {
+            background: #c72c41;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Комната ожидания</h1>
-        
-        <!-- Таймер обратного отсчета (скрыт по умолчанию) -->
-        <div id="countdown-box" style="display:none; color: #e94560; font-size: 24px; margin-bottom: 20px;">
-            Игра начнется через: <span id="timer">10</span> сек.
-        </div>
+    <h1>Комната ожидания</h1>
 
-        <div id="players-container" class="player-grid"></div>
+    <div class="players-container">
+        <h2>Игроки онлайн:</h2>
+        <div id="players"></div>
+    </div>
 
-        <div class="controls" style="margin-top: 40px;">
-            <!-- Кнопка "Я Готoв" (для всех) -->
-            <button id="btn-ready" onclick="toggleReady()" style="background: #444; color: white; padding: 15px 30px; font-size: 18px; border: none; cursor: pointer; border-radius: 5px; margin-right: 10px;">
-                Я ГОТОВ ✅
-            </button>
+    <button id="readyBtn" class="ready-btn not-ready">Я ГОТОВ ✅</button>
 
-            <!-- Панель Админа (скрыта, покажет JS если ты админ) -->
-            <div id="admin-panel" style="display:none; margin-top: 20px; border-top: 1px solid #444; padding-top: 20px;">
-                <h3 style="color: #e94560;">Панель Ведущего</h3>
-                <button onclick="forceStart()" style="background: #e94560; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px;">
-                    ПРИНУДИТЕЛЬНЫЙ СТАРТ 🚀
-                </button>
-            </div>
-        </div>
+    <div class="timer-bar" id="timerBar">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+
+    <div class="host-panel" id="hostPanel" style="display:none;">
+        <h3>Панель ведущего</h3>
+        <button class="force-start-btn" id="forceStartBtn">ПРИНУДИТЕЛЬНЫЙ СТАРТ 🚀</button>
     </div>
 
     <script>
         const socket = io();
-        let mySocketId = null; // Чтобы знать, кто Я
-        let countdownInterval = null;
 
-        // ... (тут код восстановления соединения как раньше) ...
         const myName = localStorage.getItem('my_name');
         const myAvatar = localStorage.getItem('my_avatar');
-        if (!myName || !myAvatar) window.location.href = "/";
-        else socket.emit('join_request', { name: myName, avatar: myAvatar });
+        if (!myName || !myAvatar) {
+            window.location.href = "/";
+        }
 
+        socket.emit('join_request', { name: myName, avatar: myAvatar });
+        socket.emit('request_players');
 
-        socket.on('update_player_list', function(players) {
-            const container = document.getElementById('players-container');
-            const adminPanel = document.getElementById('admin-panel');
-            const btnReady = document.getElementById('btn-ready');
-            container.innerHTML = '';
-            
-            // Находим мой ID (по имени, грубо, но для прототипа сойдет)
-            // В идеале сервер должен присылать "твой ID", но SocketIO это делает хитро.
-            // Пока будем отрисовывать всех.
-            
-            // Пробегаемся по игрокам, чтобы найти СЕБЯ и понять, Админ ли я
-            // Внимание: socket.id меняется при переподключении, поэтому надежнее
-            // ориентироваться на флаг is_admin внутри объекта игрока, 
-            // но мы пока не знаем, какой из объектов в players - это МЫ.
-            // Упрощение: сервер присылает словарь по ID сокетов.
-            
-            // Хитрость: мы можем попросить сервер сказать нам наш ID отдельно,
-            // но пока сделаем отрисовку "в лоб".
-            
-            // Рисуем карточки
-            for (let id in players) {
-                let p = players[id];
-                let isMe = (p.name === myName); // Проверка "Это я?"
-                
-                // Если я Админ, показываем панель
-                if (isMe && p.is_admin) {
-                    adminPanel.style.display = 'block';
+        const playersContainer = document.getElementById('players');
+        const readyBtn = document.getElementById('readyBtn');
+        const hostPanel = document.getElementById('hostPanel');
+        const forceStartBtn = document.getElementById('forceStartBtn');
+        const timerBar = document.getElementById('timerBar');
+        const timerFill = document.getElementById('timerFill');
+
+        let countdownInterval = null;
+
+        readyBtn.onclick = () => {
+            socket.emit('toggle_ready');
+        };
+
+        forceStartBtn.onclick = () => {
+            socket.emit('force_start');
+        };
+
+        socket.on('update_player_list', data => {
+            const players = data.players || {};
+            const adminId = data.admin_id;
+            playersContainer.innerHTML = '';
+
+            const myInfo = players[socket.id];
+            const isReadyLocal = !!(myInfo && myInfo.is_ready);
+            readyBtn.classList.toggle('not-ready', !isReadyLocal);
+            readyBtn.textContent = isReadyLocal ? "Я НЕ ГОТОВ ❌" : "Я ГОТОВ ✅";
+
+            Object.entries(players).forEach(([sid, info]) => {
+                const row = document.createElement('div');
+                row.className = 'player-item';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'player-info';
+
+                const avatarImg = document.createElement('img');
+                avatarImg.className = 'player-avatar';
+                avatarImg.src = "/static/images/avatars/" + info.avatar;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = info.name;
+
+                infoDiv.appendChild(avatarImg);
+                infoDiv.appendChild(nameSpan);
+
+                if (info.is_admin) {
+                    const crown = document.createElement('span');
+                    crown.className = 'admin-mark';
+                    crown.textContent = "👑";
+                    infoDiv.appendChild(crown);
                 }
 
-                // Статус готовности (Зеленая рамка или серая)
-                let borderStyle = p.is_ready ? "4px solid #4CAF50" : "2px solid #0f3460";
-                let statusIcon = p.is_ready ? "✅" : "⏳";
-                
-                // Кнопка кика (показываем всем, если ТЫ админ, но не на себе)
-                // Для этого нам надо точно знать, что Я - админ.
-                // Давайте упростим: кнопку кика рисуем, но сработает она только у админа.
-                // А лучше: добавим в CSS класс .kick-btn и покажем его JS-ом.
-                
-                let kickButton = '';
-                // (Это хак: мы покажем кнопку всем, но работать она будет только у админа, 
-                // сервер проверит. В идеале скрывать CSS-ом).
-                if (!isMe) { 
-                    kickButton = `<button onclick="kickPlayer('${id}')" style="background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; position:absolute; top:-10px; right:-10px; cursor:pointer;">X</button>`;
+                const status = document.createElement('span');
+                status.className = 'status-label ' + (info.is_ready ? '' : 'status-not-ready');
+                status.textContent = info.is_ready ? 'готов' : 'не готов';
+                infoDiv.appendChild(status);
+
+                row.appendChild(infoDiv);
+
+                if (socket.id === adminId && !info.is_admin) {
+                    const kickBtn = document.createElement('button');
+                    kickBtn.className = 'kick-btn';
+                    kickBtn.textContent = 'Выгнать';
+                    kickBtn.onclick = () => socket.emit('kick_player', { target_id: sid });
+                    row.appendChild(kickBtn);
                 }
 
-                let card = `
-                    <div class="player-card" style="border: ${borderStyle}; position: relative;">
-                        ${kickButton}
-                        <img src="/static/images/avatars/${p.avatar}">
-                        <div class="player-name">${p.name} ${p.is_admin ? "👑" : ""}</div>
-                        <div class="player-status">${statusIcon}</div>
-                    </div>
-                `;
-                container.innerHTML += card;
-                
-                // Обновляем текст СВОЕЙ кнопки
-                if (isMe) {
-                    btnReady.innerText = p.is_ready ? "НЕ ГОТОВ ❌" : "Я ГОТОВ ✅";
-                    btnReady.style.background = p.is_ready ? "#555" : "#4CAF50";
-                }
-            }
+                playersContainer.appendChild(row);
+            });
+
+            hostPanel.style.display = socket.id === adminId ? 'block' : 'none';
         });
 
-        // --- ФУНКЦИИ ---
-        function toggleReady() {
-            socket.emit('toggle_ready');
-        }
-        
-        function forceStart() {
-            if(confirm("Запустить игру принудительно?")) {
-                socket.emit('force_start');
-            }
-        }
-        
-        function kickPlayer(id) {
-            if(confirm("Выгнать этого игрока?")) {
-                socket.emit('kick_player', {target_id: id});
-            }
-        }
-
-        // --- ТАЙМЕРЫ ---
-        socket.on('start_timer_signal', function(data) {
-            document.getElementById('countdown-box').style.display = 'block';
-            let sec = data.seconds;
-            document.getElementById('timer').innerText = sec;
-            
+        socket.on('start_timer_signal', data => {
+            const seconds = data.seconds || 10;
+            timerBar.style.display = 'block';
+            timerFill.style.width = '100%';
             if (countdownInterval) clearInterval(countdownInterval);
-            
+
+            let remain = seconds;
             countdownInterval = setInterval(() => {
-                sec--;
-                document.getElementById('timer').innerText = sec;
-                if (sec <= 0) {
+                remain -= 1;
+                const percent = Math.max(0, (remain / seconds) * 100);
+                timerFill.style.width = percent + '%';
+
+                if (remain <= 0) {
                     clearInterval(countdownInterval);
+                    window.location.href = '/game';
                 }
             }, 1000);
         });
 
-        socket.on('stop_timer_signal', function() {
-            document.getElementById('countdown-box').style.display = 'none';
-            if (countdownInterval) clearInterval(countdownInterval);
+        socket.on('stop_timer_signal', () => {
+            timerBar.style.display = 'none';
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
         });
-        
-        socket.on('redirect_to_game', function(data) {
-             window.location.href = data.url;
+
+        socket.on('redirect_to_game', data => {
+            window.location.href = data.url;
+        });
+
+        socket.on('redirect', data => {
+            window.location.href = data.url;
         });
     </script>
 </body>

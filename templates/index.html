@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Вход в Свою Игру</title>
-    <!-- Подключаем библиотеку Socket.IO -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         body { background: #1a1a2e; color: white; font-family: sans-serif; text-align: center; }
         .setup-container { width: 300px; margin: 50px auto; background: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -22,54 +20,36 @@
     <div class="setup-container">
         <h2>Кто ты, воин?</h2>
         <input type="text" id="username" placeholder="Введи своё имя">
-        
+
         <p>Выбери аватар:</p>
         <div class="avatar-list">
-            <!-- data-val нужен, чтобы скрипт знал имя файла -->
             <img src="/static/images/avatars/1.png" data-val="1.png" onclick="selectAvatar(this)" class="selected">
             <img src="/static/images/avatars/2.png" data-val="2.png" onclick="selectAvatar(this)">
             <img src="/static/images/avatars/3.png" data-val="3.png" onclick="selectAvatar(this)">
         </div>
 
-        <button onclick="joinGame()">Войти в лобби</button>
+        <button onclick="goLobby()">Войти в лобби</button>
     </div>
 
     <script>
-        const socket = io({
-    transports: ['polling'], // Принудительно используем самый простой способ связи (HTTP), он стабильнее в туннелях
-    upgrade: false // Запрещаем пытаться "улучшить" связь до вебсокетов (они часто блокируются бесплатными туннелями)
-        });
-        let selectedAvatarFile = "1.png"; // Значение по умолчанию
+        let currentAvatar = "1.png";
 
         function selectAvatar(element) {
-            // Убираем выделение со всех
             document.querySelectorAll('.avatar-list img').forEach(img => img.classList.remove('selected'));
-            // Выделяем нажатый
             element.classList.add('selected');
-            // Запоминаем имя файла из атрибута data-val
-            selectedAvatarFile = element.getAttribute('data-val');
+            currentAvatar = element.getAttribute('data-val');
         }
 
-        function joinGame() {
-            const name = document.getElementById('username').value;
-            
-            if (name.trim() === "") {
+        function goLobby() {
+            const name = document.getElementById('username').value.trim();
+            if (!name) {
                 alert("Пожалуйста, введи имя!");
                 return;
             }
-
-            // ВАЖНО: Мы отправляем данные на сервер, а не просто переходим
-            socket.emit('join_request', { name: name, avatar: selectedAvatarFile });
+            localStorage.setItem('my_name', name);
+            localStorage.setItem('my_avatar', currentAvatar);
+            window.location.href = "/lobby";
         }
-
-        // Если сервер пустил, он пришлет команду redirect
-        socket.on('redirect', function(data) {
-            // Сохраняем имя и АВАТАРКУ в память браузера
-            localStorage.setItem('my_name', document.getElementById('username').value);
-            localStorage.setItem('my_avatar', selectedAvatarFile); // <--- ВОТ ЭТА ВАЖНАЯ СТРОКА
-            
-            window.location.href = data.url;
-        });
     </script>
 </body>
 </html>

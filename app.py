@@ -1,110 +1,122 @@
-# =================================================================
-#                 app.py - ГЛАВНЫЙ ФАЙЛ СЕРВЕРА
-# =================================================================
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, jsonify
 from flask_socketio import SocketIO, emit
-import time
+import json, os
 
-# --- НАСТРОЙКА ПРИЛОЖЕНИЯ ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-very-secret-key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# --- ХРАНИЛИЩЕ ДАННЫХ ИГРЫ ---
-# PLAYERS[sid] = {'name': 'Имя', 'avatar': '1.png', 'score': 0,
-#                 'is_ready': False, 'is_admin': False}
+# PLAYERS[sid] = {
+#   'name': ...,
+#   'avatar': ...,
+#   'score': 0,
+#   'is_ready': False,
+#   'is_admin': False
+# }
 PLAYERS = {}
 
-# =================================================================
-#                   ЛОГИКА СТРАНИЦ (HTML)
-# =================================================================
+
+# ----------------- ROUTES -----------------
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/lobby')
 def lobby():
     return render_template('lobby.html')
 
+
 @app.route('/game')
 def game():
     return render_template('board.html')
 
-# =================================================================
-#          ЛОГИКА ОБРАТНОГО ОТСЧЕТА (Фоновая задача)
-# =================================================================
-def start_game_countdown():
-    """Фоновый таймер на 10 секунд перед стартом игры."""
-    print("[ТАЙМЕР]: Запущен обратный отсчет 10 секунд...")
-    time.sleep(10)
 
-    with app.app_context():
-        # Перепроверяем, все ли ещё готовы
-        if PLAYERS and all(p.get('is_ready') for p in PLAYERS.values()):
-            print("[ТАЙМЕР]: Все ещё готовы. Стартуем игру!")
-            socketio.emit('redirect_to_game', {'url': url_for('game')}, broadcast=True)
-        else:
-            print("[ТАЙМЕР]: Кто-то стал не готов. Старт отменён.")
-            socketio.emit('stop_timer_signal', broadcast=True)
+@app.route('/questions')
+def get_questions():
+    path = os.path.join(os.path.dirname(__file__), 'questions.json')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = {"categories": []}
+    return jsonify(data)
 
-# =================================================================
-#                ЛОГИКА ИГРЫ (События Socket.IO)
-# =================================================================
+
+# ----------------- HELPERS -----------------
+
+def broadcast_players():
+    """Отправляет всем список игроков и id админа."""
+    admin_sid = None
+    for sid, pdata in PLAYERS.items():
+        if pdata.get('is_admin'):
+            admin_sid = sid
+            break
+
+    socketio.emit('update_player_list', {
+        'players': PLAYERS,
+        'admin_id': admin_sid
+    })
+
+
+# ----------------- SOCKET.IO EVENTS -----------------
 
 @socketio.on('connect')
 def on_connect():
-    """Просто факт подключения сокет-клиента."""
     print(f"[SocketIO]: клиент подключился, sid = {request.sid}")
+
 
 @socketio.on('join_request')
 def handle_join(data):
-    """Игрок заходит в игру (после нажатия кнопки на index.html)."""
-    print("[join_request]: получены данные от клиента:", data)
-
-    player_name = data.get('name')
-    player_avatar = data.get('avatar')
-
-    if not player_name or not player_avatar:
-        print("[join_request]: ПУСТЫЕ данные, игнорируем.")
+    """Игрок заходит в лобби (вызывается из lobby.html)."""
+    print("[join_request]:", data)
+    name = data.get('name')
+    avatar = data.get('avatar')
+    if not name or not avatar:
         return
 
-    # Первый зашедший становится админом
-    is_admin = not PLAYERS
+    is_admin = not PLAYERS  # первый зашедший — админ
 
     PLAYERS[request.sid] = {
-        'name': player_name,
-        'avatar': player_avatar,
+        'name': name,
+        'avatar': avatar,
         'score': 0,
         'is_ready': False,
         'is_admin': is_admin
     }
+    print(f"[Игрок]: '{name}' подключился. Всего игроков: {len(PLAYERS)}.")
+    broadcast_players()
 
-    print(f"[Игрок]: '{player_name}' подключился. Всего игроков: {len(PLAYERS)}.")
 
-    # Сообщаем клиенту, что можно переходить в лобби
-    emit('redirect', {'url': url_for('lobby')}, to=request.sid)
-    # Обновляем список игроков у всех
-    emit('update_player_list', PLAYERS, broadcast=True)
+@socketio.on('request_players')
+def handle_request_players():
+    broadcast_players()
+
 
 @socketio.on('toggle_ready')
 def handle_toggle_ready():
-    """Игрок нажимает кнопку 'Готов / Не готов'."""
+    """Игрок нажимает кнопку 'ГОТОВ / НЕ ГОТОВ'."""
     if request.sid not in PLAYERS:
-        print("[toggle_ready]: неизвестный sid, игнорируем.")
+        print("[toggle_ready]: неизвестный sid")
         return
 
     PLAYERS[request.sid]['is_ready'] = not PLAYERS[request.sid]['is_ready']
-    all_ready = all(p.get('is_ready') for p in PLAYERS.values())
+    state = "готов" if PLAYERS[request.sid]['is_ready'] else "не готов"
+    print(f"[toggle_ready]: {PLAYERS[request.sid]['name']} теперь {state}")
 
-    if len(PLAYERS) > 1 and all_ready:
-        print("[toggle_ready]: все готовы, запускаем фоновый таймер.")
-        socketio.start_background_task(target=start_game_countdown)
+    # Все готовы и игроков больше одного?
+    all_ready = len(PLAYERS) > 1 and all(p.get('is_ready') for p in PLAYERS.values())
+
+    if all_ready:
+        print("[toggle_ready]: все готовы, запускаем таймер на клиентах")
         emit('start_timer_signal', {'seconds': 10}, broadcast=True)
     else:
-        print("[toggle_ready]: не все готовы, останавливаем таймер (если был).")
+        print("[toggle_ready]: не все готовы, останавливаем таймер")
         emit('stop_timer_signal', broadcast=True)
 
-    emit('update_player_list', PLAYERS, broadcast=True)
+    broadcast_players()
+
 
 @socketio.on('kick_player')
 def handle_kick_player(data):
@@ -112,48 +124,49 @@ def handle_kick_player(data):
     requester_sid = request.sid
     target_sid = data.get('target_id')
 
-    if PLAYERS.get(requester_sid, {}).get('is_admin') and target_sid in PLAYERS:
+    if not PLAYERS.get(requester_sid, {}).get('is_admin'):
+        print("[kick_player]: неадмин, игнорируем")
+        return
+
+    if target_sid == requester_sid:
+        print("[kick_player]: попытка кикнуть самого себя")
+        return
+
+    if target_sid in PLAYERS:
         kicked_name = PLAYERS[target_sid]['name']
-        print(f"[Админ]: кикнул игрока '{kicked_name}'.")
+        print(f"[Админ]: кикнул '{kicked_name}'")
         emit('redirect', {'url': url_for('index')}, to=target_sid)
         socketio.disconnect(sid=target_sid)
+    else:
+        print("[kick_player]: целевой sid не найден")
+
 
 @socketio.on('force_start')
 def handle_force_start():
     """Принудительный старт игры (только для админа)."""
     if PLAYERS.get(request.sid, {}).get('is_admin'):
         print("[Админ]: принудительный старт игры.")
-        emit('redirect_to_game', {'url': url_for('game')}, broadcast=True)
+        socketio.emit('redirect_to_game', {'url': url_for('game')})
+    else:
+        print("[force_start]: неадмин, игнорируем")
+
 
 @socketio.on('disconnect')
-def handle_disconnect():
-    """Игрок закрыл вкладку или был кикнут."""
+def handle_disconnect(reason=None):
     if request.sid in PLAYERS:
-        player_name = PLAYERS[request.sid]['name']
+        name = PLAYERS[request.sid]['name']
+        was_admin = PLAYERS[request.sid]['is_admin']
         del PLAYERS[request.sid]
-        print(f"[Игрок]: '{player_name}' отключился. Осталось игроков: {len(PLAYERS)}.")
+        print(f"[Игрок]: '{name}' отключился. Осталось: {len(PLAYERS)}.")
 
-        # Если админ вышел — назначаем нового, если есть игроки
-        if PLAYERS and not any(p.get('is_admin') for p in PLAYERS.values()):
+        if was_admin and PLAYERS and not any(p.get('is_admin') for p in PLAYERS.values()):
             new_admin_sid = next(iter(PLAYERS))
             PLAYERS[new_admin_sid]['is_admin'] = True
-            print(f"[Сервер]: новый админ — '{PLAYERS[new_admin_sid]['name']}'.")
+            print(f"[Сервер]: новый админ — '{PLAYERS[new_admin_sid]['name']}'")
 
-        emit('update_player_list', PLAYERS, broadcast=True)
+        broadcast_players()
 
-# =================================================================
-#                          ЗАПУСК СЕРВЕРА
-# =================================================================
+
 if __name__ == '__main__':
-    print("------------------------------------------------------")
-    print("           ЗАПУСК ИГРОВОГО СЕРВЕРА")
-    print("------------------------------------------------------")
-    try:
-        print("Сервер работает локально на: http://localhost:5000")
-        print("Чтобы остановить, нажмите Ctrl+C.")
-        print("------------------------------------------------------")
-        socketio.run(app, host='0.0.0.0', port=5000)
-    except KeyboardInterrupt:
-        print("\n------------------------------------------------------")
-        print("           СЕРВЕР ОСТАНОВЛЕН")
-        print("------------------------------------------------------")
+    print("Запуск на http://localhost:5000")
+    socketio.run(app, host='0.0.0.0', port=5000)

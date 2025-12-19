@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Игровое поле</title>
+    <style>
+        body { background: #1a1a2e; color: white; font-family: sans-serif; margin: 0; }
+        h1 { text-align: center; margin-top: 20px; color: #e94560; }
+
+        .board-grid {
+            width: 90%;
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: 2fr repeat(5, 1fr);
+            grid-template-rows: repeat(6, 80px);
+            gap: 5px;
+        }
+
+        .cell {
+            border: 1px solid #0f3460;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background: #16213e;
+        }
+
+        .category-cell {
+            background: #0f3460;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Игровое поле</h1>
+    <div class="board-grid">
+        <div class="cell category-cell">Категория 1</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+
+        <div class="cell category-cell">Категория 2</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+
+        <div class="cell category-cell">Категория 3</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+
+        <div class="cell category-cell">Категория 4</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+
+        <div class="cell category-cell">Категория 5</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+
+        <div class="cell category-cell">Категория 6</div>
+        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+    </div>
+</body>
+</html>
