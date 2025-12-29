@@ -196,7 +196,7 @@ def handle_start():
 
 @socketio.on('select_question')
 def handle_select(data):
-    """Обработка выбора вопроса - отправляем полные данные"""
+    """Обработка выбора вопроса - отправляем полные данные включая ответы"""
     try:
         with open('questions.json', 'r', encoding='utf-8') as f:
             questions_data = json.load(f)
@@ -215,13 +215,15 @@ def handle_select(data):
             'team_id': None
         })
         
-        # Отправляем вопрос с медиа-данными
+        # Отправляем вопрос с медиа-данными + данные ответа
         socketio.emit('question_opened', {
             'category': data['category'],
             'price': int(data['price']),
             'text': question.get('text', '') if question else '',
             'media_type': question.get('media_type', 'text') if question else 'text',
-            'media_url': question.get('media_url') if question else None
+            'media_url': question.get('media_url') if question else None,
+            'answer_text': question.get('answer_text') if question else None,
+            'answer_image': question.get('answer_image') if question else None
         })
     
     except Exception as e:
@@ -231,7 +233,9 @@ def handle_select(data):
             'price': int(data['price']),
             'text': 'Ошибка загрузки вопроса',
             'media_type': 'text',
-            'media_url': None
+            'media_url': None,
+            'answer_text': None,
+            'answer_image': None
         })
 
 @socketio.on('toggle_cell')
