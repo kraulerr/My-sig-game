@@ -487,14 +487,15 @@
         function submitAnswer(correct) {
             clearInterval(timerInterval);
             
-            if (correct && (currentQuestion.answer_text || currentQuestion.answer_image)) {
+            if (correct && (currentQuestion.answer_text || currentQuestion.answer_image || currentQuestion.answer_video || currentQuestion.answer_audio)) {
                 // Показываем ответ перед закрытием
                 showAnswer();
                 
                 // Отправляем результат с задержкой
+                // Видео/Аудио - 15 секунд, Текст/Картинка - 10 секунд
                 setTimeout(() => {
                     socket.emit('submit_answer', { correct: correct });
-                }, 4000); // 4 секунды на просмотр ответа
+                }, currentQuestion.answer_video || currentQuestion.answer_audio ? 15000 : 10000);
             } else {
                 // Неправильный ответ или нет данных ответа - сразу отправляем
                 socket.emit('submit_answer', { correct: correct });
@@ -519,16 +520,43 @@
                 document.getElementById('q-description').style.fontWeight = 'bold';
             }
             
+            // Очищаем медиа-контейнер
+            const mediaContainer = document.getElementById('question-media');
+            mediaContainer.innerHTML = '';
+            
             // Показываем картинку ответа
             if (currentQuestion.answer_image) {
-                const mediaContainer = document.getElementById('question-media');
-                mediaContainer.innerHTML = '';
-                
                 const answerImg = document.createElement('img');
                 answerImg.src = currentQuestion.answer_image;
                 answerImg.alt = 'Ответ';
                 answerImg.style.animation = 'fadeIn 0.5s';
                 mediaContainer.appendChild(answerImg);
+            }
+            
+            // Показываем видео ответа
+            if (currentQuestion.answer_video) {
+                const answerVideo = document.createElement('video');
+                answerVideo.src = currentQuestion.answer_video;
+                answerVideo.controls = true;
+                answerVideo.autoplay = true;
+                answerVideo.style.animation = 'fadeIn 0.5s';
+                answerVideo.style.maxWidth = '100%';
+                answerVideo.style.maxHeight = '500px';
+                answerVideo.style.borderRadius = '10px';
+                answerVideo.style.boxShadow = '0 0 20px rgba(15, 186, 129, 0.5)';
+                mediaContainer.appendChild(answerVideo);
+            }
+            
+            // Показываем аудио ответа
+            if (currentQuestion.answer_audio) {
+                const answerAudio = document.createElement('audio');
+                answerAudio.src = currentQuestion.answer_audio;
+                answerAudio.controls = true;
+                answerAudio.autoplay = true;
+                answerAudio.style.width = '100%';
+                answerAudio.style.maxWidth = '600px';
+                answerAudio.style.marginTop = '20px';
+                mediaContainer.appendChild(answerAudio);
             }
         }
 
