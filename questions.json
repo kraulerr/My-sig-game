@@ -8,40 +8,50 @@
           "text": "С какой птицей этот персонаж перепутал камеру оператора?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_100.png",
-          "answer_text": "Сова",
-          "answer_image": null
+          "answer_text": "Попугай",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 200,
           "text": "Любимое мужское имя этого персонажа?",
           "media_type": "image",
-          "media_url": "/static/videos/questions/memelniy_200.png",
-          "answer_text": "Ибрагим",
-          "answer_image": null
+          "media_url": "/static/images/questions/memelniy_200.png",
+          "answer_text": "Андрей",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 300,
           "text": "Кого поздравлял с Днём Рождения этот персонаж?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_300.png",
-          "answer_text": "Александр/Саша",
-          "answer_image": null
+          "answer_text": "Влада",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
           "text": "Собака какой породы потерпела ФИАСКО в этом месте",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_400.png",
-          "answer_text": "Сиба-ину",
-          "answer_image": null
+          "answer_text": "Такса",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 500,
           "text": "Рык какого животного показывает этот персонаж?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_500.png",
-          "answer_text": "Лев",
-          "answer_image": null
+          "answer_text": "Тигр",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     },
@@ -54,7 +64,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/rebusy_100.jpg",
           "answer_text": "СНЕГОВИК",
-          "answer_image": "/static/images/answers/rebusy_100_answer.jpg"
+          "answer_image": "/static/images/answers/rebusy_100_answer.jpg",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 200,
@@ -62,7 +74,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/rebusy_200.png",
           "answer_text": "НОВЫЙ ГОД",
-          "answer_image": "/static/images/answers/rebusy_200_answer.png"
+          "answer_image": "/static/images/answers/rebusy_200_answer.png",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 300,
@@ -70,7 +84,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/rebusy_300.jpg",
           "answer_text": "ПОДАРОК",
-          "answer_image": "/static/images/answers/rebusy_300_answer.jpg"
+          "answer_image": "/static/images/answers/rebusy_300_answer.jpg",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
@@ -78,7 +94,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/rebusy_400.jpg",
           "answer_text": "МАНДАРИН",
-          "answer_image": "/static/images/answers/rebusy_400_answer.jpg"
+          "answer_image": "/static/images/answers/rebusy_400_answer.jpg",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 500,
@@ -86,7 +104,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/rebusy_500.png",
           "answer_text": "СНЕЖИНКА",
-          "answer_image": "/static/images/answers/rebusy_500_answer.png"
+          "answer_image": "/static/images/answers/rebusy_500_answer.png",
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     },
@@ -99,7 +119,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/kadr_100.jpg",
           "answer_text": "Ирония судьбы",
-          "answer_image": "/static/images/answers/kadr_100_full.jpg"
+          "answer_image": "/static/images/answers/kadr_100_full.jpg",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 200,
@@ -107,7 +129,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/kadr_200.jpg",
           "answer_text": "Кевин Маккалистер",
-          "answer_image": "/static/images/answers/kadr_200_full.jpg"
+          "answer_image": "/static/images/answers/kadr_200_full.jpg",
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 300,
@@ -115,7 +139,9 @@
           "media_type": "video",
           "media_url": "/static/videos/questions/kadr_300.mp4",
           "answer_text": "Чудеса в Решетове",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
@@ -123,7 +149,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/kadr_400.jpg",
           "answer_text": "Морозко",
-          "answer_image": "/static/images/answers/kadr_400_full.jpg"
+          "answer_image": "/static/images/answers/kadr_400_full.jpg",
+          "answer_video": "/static/videos/answers/kadr_400_clip.mp4",
+          "answer_audio": null
         },
         {
           "price": 500,
@@ -131,7 +159,9 @@
           "media_type": "image",
           "media_url": "/static/images/questions/kadr_500.jpg",
           "answer_text": "Снеговик-почтовик",
-          "answer_image": "/static/images/answers/kadr_500_full.jpg"
+          "answer_image": "/static/images/answers/kadr_500_full.jpg",
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     },
@@ -144,7 +174,9 @@
           "media_type": "text",
           "media_url": null,
           "answer_text": "Кентавр",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 200,
@@ -152,7 +184,9 @@
           "media_type": "text",
           "media_url": null,
           "answer_text": "12 лет",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 300,
@@ -160,7 +194,9 @@
           "media_type": "text",
           "media_url": null,
           "answer_text": "Спирит: Душа прерий",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
@@ -168,7 +204,9 @@
           "media_type": "text",
           "media_url": null,
           "answer_text": "Примеры: Кони в яблоках, Белая лошадь, Лошадка, Кони привередливые",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 500,
@@ -176,7 +214,9 @@
           "media_type": "text",
           "media_url": null,
           "answer_text": "Porsche",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     },
@@ -189,15 +229,19 @@
           "media_type": "audio",
           "media_url": "/static/audio/questions/meloman_100.mp3",
           "answer_text": "Jingle Bells",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": "/static/videos/answers/meloman_100_clip.mp4",
+          "answer_audio": null
         },
         {
           "price": 200,
           "text": "Кто исполнитель?",
           "media_type": "audio",
           "media_url": "/static/audio/questions/meloman_200.mp3",
-          "answer_text": "Элвис Пресли",
-          "answer_image": null
+          "answer_text": "Элвис Пресли - Blue Christmas",
+          "answer_image": "/static/images/answers/meloman_200_elvis.jpg",
+          "answer_video": null,
+          "answer_audio": "/static/audio/answers/meloman_200_full.mp3"
         },
         {
           "price": 300,
@@ -205,23 +249,29 @@
           "media_type": "audio",
           "media_url": "/static/audio/questions/meloman_300.mp3",
           "answer_text": "Один дома",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
           "text": "Назовите композитора",
           "media_type": "audio",
           "media_url": "/static/audio/questions/meloman_400.mp3",
-          "answer_text": "Пётр Ильич Чайковский",
-          "answer_image": null
+          "answer_text": "Пётр Ильич Чайковский - Щелкунчик",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 500,
           "text": "Из какого года эта песня?",
           "media_type": "audio",
           "media_url": "/static/audio/questions/meloman_500.mp3",
-          "answer_text": "1984",
-          "answer_image": null
+          "answer_text": "1984 - Last Christmas (Wham!)",
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     },
@@ -234,7 +284,9 @@
           "media_type": "video",
           "media_url": "/static/videos/questions/nostalgia_100.mp4",
           "answer_text": "Встретимся",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": "/static/videos/answers/nostalgia_100_full.mp4",
+          "answer_audio": null
         },
         {
           "price": 200,
@@ -242,7 +294,9 @@
           "media_type": "video",
           "media_url": "/static/videos/questions/nostalgia_200.mp4",
           "answer_text": "Включит музыку",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 300,
@@ -250,7 +304,9 @@
           "media_type": "video",
           "media_url": "/static/videos/questions/nostalgia_300.mp4",
           "answer_text": "Coca-Cola",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 400,
@@ -258,7 +314,9 @@
           "media_type": "video",
           "media_url": "/static/videos/questions/nostalgia_400.mp4",
           "answer_text": "Филипп Киркоров",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         },
         {
           "price": 500,
@@ -266,10 +324,11 @@
           "media_type": "audio",
           "media_url": "/static/audio/questions/nostalgia_500.mp3",
           "answer_text": "В лесу родилась ёлочка",
-          "answer_image": null
+          "answer_image": null,
+          "answer_video": null,
+          "answer_audio": null
         }
       ]
     }
   ]
 }
-
