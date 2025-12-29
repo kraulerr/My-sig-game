@@ -158,13 +158,62 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
         }
         #modal.active { display: flex; }
+        
+        #modal-content {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
         #q-text {
             color: #f8b400;
             font-size: 42px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
+        }
+        
+        #q-description {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        /* Контейнер для медиа */
+        #question-media {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #question-media img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(248, 180, 0, 0.3);
+        }
+        
+        #question-media video {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(248, 180, 0, 0.3);
+        }
+        
+        #question-media audio {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
         }
         
         #team-select {
@@ -239,13 +288,20 @@
     </div>
     
     <div id="modal">
-        <h1 id="q-text"></h1>
-        <div id="team-select"></div>
-        <div id="timer"></div>
-        <div id="answering-team"></div>
-        <div id="answer-controls">
-            <button class="answer-btn correct" onclick="submitAnswer(true)">✅ ПРАВИЛЬНО</button>
-            <button class="answer-btn wrong" onclick="submitAnswer(false)">❌ НЕПРАВИЛЬНО</button>
+        <div id="modal-content">
+            <h1 id="q-text"></h1>
+            <p id="q-description"></p>
+            
+            <!-- Контейнер для медиа -->
+            <div id="question-media"></div>
+            
+            <div id="team-select"></div>
+            <div id="timer"></div>
+            <div id="answering-team"></div>
+            <div id="answer-controls">
+                <button class="answer-btn correct" onclick="submitAnswer(true)">✅ ПРАВИЛЬНО</button>
+                <button class="answer-btn wrong" onclick="submitAnswer(false)">❌ НЕПРАВИЛЬНО</button>
+            </div>
         </div>
     </div>
     
@@ -344,6 +400,33 @@
         socket.on('question_opened', (data) => {
             document.getElementById('modal').classList.add('active');
             document.getElementById('q-text').innerText = `${data.category}: ${data.price}`;
+            document.getElementById('q-description').innerText = data.text || '';
+            
+            // Очищаем предыдущий медиа-контент
+            const mediaContainer = document.getElementById('question-media');
+            mediaContainer.innerHTML = '';
+            
+            // Добавляем медиа в зависимости от типа
+            if (data.media_type === 'image' && data.media_url) {
+                const img = document.createElement('img');
+                img.src = data.media_url;
+                img.alt = 'Изображение вопроса';
+                mediaContainer.appendChild(img);
+            } 
+            else if (data.media_type === 'audio' && data.media_url) {
+                const audio = document.createElement('audio');
+                audio.src = data.media_url;
+                audio.controls = true;
+                audio.autoplay = true;
+                mediaContainer.appendChild(audio);
+            } 
+            else if (data.media_type === 'video' && data.media_url) {
+                const video = document.createElement('video');
+                video.src = data.media_url;
+                video.controls = true;
+                video.autoplay = true;
+                mediaContainer.appendChild(video);
+            }
             
             if (isAdmin) {
                 const teamSelect = document.getElementById('team-select');
