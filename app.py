@@ -167,7 +167,7 @@ def handle_start():
 
 @socketio.on('select_question')
 def handle_select(data):
-    # Загружаем полные данные вопроса из questions.json
+    """Обработка выбора вопроса - отправляем полные данные"""
     try:
         with open('questions.json', 'r', encoding='utf-8') as f:
             questions_data = json.load(f)
@@ -190,13 +190,20 @@ def handle_select(data):
         socketio.emit('question_opened', {
             'category': data['category'],
             'price': int(data['price']),
-            'text': question.get('text', ''),
-            'media_type': question.get('media_type', 'text'),
-            'media_url': question.get('media_url')
+            'text': question.get('text', '') if question else '',
+            'media_type': question.get('media_type', 'text') if question else 'text',
+            'media_url': question.get('media_url') if question else None
         })
     
     except Exception as e:
-        print(f"Error loading question: {e}")
+        print(f"❌ Error loading question: {e}")
+        socketio.emit('question_opened', {
+            'category': data['category'],
+            'price': int(data['price']),
+            'text': 'Ошибка загрузки вопроса',
+            'media_type': 'text',
+            'media_url': None
+        })
 
 @socketio.on('toggle_cell')
 def handle_toggle(data):
@@ -240,12 +247,8 @@ def handle_submit(data):
     # Останавливаем таймер
     socketio.emit('timer_stop', {})
     
-    # Закрываем модалку с вопросом
-    socketio.emit('close_question_modal', {})
-    
     # Обновляем данные на доске
     broadcast_game()
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
-
