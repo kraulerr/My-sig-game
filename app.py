@@ -215,7 +215,7 @@ def handle_select(data):
             'team_id': None
         })
         
-        # Отправляем вопрос с медиа-данными + данные ответа
+        # Отправляем вопрос с медиа-данными + данные ответа (все типы)
         socketio.emit('question_opened', {
             'category': data['category'],
             'price': int(data['price']),
@@ -223,7 +223,9 @@ def handle_select(data):
             'media_type': question.get('media_type', 'text') if question else 'text',
             'media_url': question.get('media_url') if question else None,
             'answer_text': question.get('answer_text') if question else None,
-            'answer_image': question.get('answer_image') if question else None
+            'answer_image': question.get('answer_image') if question else None,
+            'answer_video': question.get('answer_video') if question else None,
+            'answer_audio': question.get('answer_audio') if question else None
         })
     
     except Exception as e:
@@ -235,7 +237,9 @@ def handle_select(data):
             'media_type': 'text',
             'media_url': None,
             'answer_text': None,
-            'answer_image': None
+            'answer_image': None,
+            'answer_video': None,
+            'answer_audio': None
         })
 
 @socketio.on('toggle_cell')
