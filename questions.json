@@ -8,7 +8,7 @@
           "text": "С какой птицей этот персонаж перепутал камеру оператора?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_100.png",
-          "answer_text": "Попугай",
+          "answer_text": "Сова",
           "answer_image": null
         },
         {
@@ -16,7 +16,7 @@
           "text": "Любимое мужское имя этого персонажа?",
           "media_type": "image",
           "media_url": "/static/videos/questions/memelniy_200.png",
-          "answer_text": "Андрей",
+          "answer_text": "Ибрагим",
           "answer_image": null
         },
         {
@@ -24,7 +24,7 @@
           "text": "Кого поздравлял с Днём Рождения этот персонаж?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_300.png",
-          "answer_text": "Влада",
+          "answer_text": "Александр/Саша",
           "answer_image": null
         },
         {
@@ -32,7 +32,7 @@
           "text": "Собака какой породы потерпела ФИАСКО в этом месте",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_400.png",
-          "answer_text": "Такса",
+          "answer_text": "Сиба-ину",
           "answer_image": null
         },
         {
@@ -40,7 +40,7 @@
           "text": "Рык какого животного показывает этот персонаж?",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_500.png",
-          "answer_text": "Тигр",
+          "answer_text": "Лев",
           "answer_image": null
         }
       ]
@@ -272,3 +272,4 @@
     }
   ]
 }
+
