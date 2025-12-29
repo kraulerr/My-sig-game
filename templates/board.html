@@ -176,6 +176,7 @@
             font-size: 42px;
             margin-bottom: 20px;
             text-align: center;
+            transition: all 0.5s;
         }
         
         #q-description {
@@ -184,6 +185,7 @@
             margin-bottom: 20px;
             text-align: center;
             line-height: 1.4;
+            transition: all 0.5s;
         }
         
         /* Контейнер для медиа */
@@ -280,6 +282,11 @@
             display: none;
         }
         #answering-team.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -313,8 +320,8 @@
         let isAdmin = false;
         let timerInterval = null;
         let teamsData = {};
+        let currentQuestion = {}; // Храним данные текущего вопроса
 
-        // ВАЖНО: Используем join_game вместо join_lobby
         socket.emit('join_game', {
             name: myName,
             avatar: localStorage.getItem('myavatar')
@@ -335,7 +342,6 @@
                 if (cell) cell.classList.add('cell-disabled');
             });
             
-            // Проверяем, закончилась ли игра
             socket.emit('check_game_finished');
         });
 
@@ -343,7 +349,6 @@
             const teamsBar = document.getElementById('teams');
             teamsBar.innerHTML = '';
             
-            // Команды игроков
             for (let [tid, team] of Object.entries(teams)) {
                 teamsBar.innerHTML += `
                     <div class="team-card" id="team-${tid}">
@@ -354,7 +359,6 @@
                 `;
             }
             
-            // Админы отдельно
             if (admins && admins.length > 0) {
                 let adminsHtml = '<div class="admins-section"><h3>👑 Ведущие</h3>';
                 admins.forEach(admin => {
@@ -401,6 +405,8 @@
         }
 
         socket.on('question_opened', (data) => {
+            currentQuestion = data; // Сохраняем данные вопроса
+            
             document.getElementById('modal').classList.add('active');
             document.getElementById('q-text').innerText = `${data.category}: ${data.price}`;
             document.getElementById('q-description').innerText = data.text || '';
@@ -480,18 +486,73 @@
 
         function submitAnswer(correct) {
             clearInterval(timerInterval);
-            socket.emit('submit_answer', { correct: correct });
+            
+            if (correct && (currentQuestion.answer_text || currentQuestion.answer_image)) {
+                // Показываем ответ перед закрытием
+                showAnswer();
+                
+                // Отправляем результат с задержкой
+                setTimeout(() => {
+                    socket.emit('submit_answer', { correct: correct });
+                }, 4000); // 4 секунды на просмотр ответа
+            } else {
+                // Неправильный ответ или нет данных ответа - сразу отправляем
+                socket.emit('submit_answer', { correct: correct });
+            }
+        }
+
+        function showAnswer() {
+            // Скрываем кнопки управления
+            document.getElementById('answer-controls').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('answering-team').style.display = 'none';
+            
+            // Меняем заголовок
+            document.getElementById('q-text').innerText = '✅ ПРАВИЛЬНО!';
+            document.getElementById('q-text').style.color = '#0fba81';
+            
+            // Показываем текстовый ответ
+            if (currentQuestion.answer_text) {
+                document.getElementById('q-description').innerText = `Ответ: ${currentQuestion.answer_text}`;
+                document.getElementById('q-description').style.fontSize = '36px';
+                document.getElementById('q-description').style.color = '#f8b400';
+                document.getElementById('q-description').style.fontWeight = 'bold';
+            }
+            
+            // Показываем картинку ответа
+            if (currentQuestion.answer_image) {
+                const mediaContainer = document.getElementById('question-media');
+                mediaContainer.innerHTML = '';
+                
+                const answerImg = document.createElement('img');
+                answerImg.src = currentQuestion.answer_image;
+                answerImg.alt = 'Ответ';
+                answerImg.style.animation = 'fadeIn 0.5s';
+                mediaContainer.appendChild(answerImg);
+            }
         }
 
         socket.on('timer_stop', () => {
             clearInterval(timerInterval);
+            
+            // Сброс стилей
+            document.getElementById('q-text').style.color = '#f8b400';
+            document.getElementById('q-description').style.fontSize = '24px';
+            document.getElementById('q-description').style.color = 'white';
+            document.getElementById('q-description').style.fontWeight = 'normal';
+            
             document.getElementById('modal').classList.remove('active');
             document.getElementById('timer').classList.remove('active');
+            document.getElementById('timer').style.display = 'block';
             document.getElementById('answering-team').classList.remove('active');
+            document.getElementById('answering-team').style.display = 'block';
             document.getElementById('answer-controls').classList.remove('active');
+            document.getElementById('answer-controls').style.display = 'flex';
             document.getElementById('team-select').style.display = 'flex';
             
             document.querySelectorAll('.team-card').forEach(t => t.classList.remove('active'));
+            
+            currentQuestion = {}; // Очищаем данные вопроса
         });
 
         socket.on('game_finished', (data) => {
