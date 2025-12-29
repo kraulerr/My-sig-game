@@ -5,33 +5,33 @@
       "questions": [
         {
           "price": 100,
-          "text": "Какой мем изображён на картинке?",
+          "text": "С какой птицей этот персонаж перепутал камеру оператора?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_100.jpg"
+          "media_url": "/static/images/questions/memelniy_100.png"
         },
         {
           "price": 200,
-          "text": "Из какого видео этот мем?",
-          "media_type": "video",
-          "media_url": "/static/videos/questions/memelniy_200.mp4"
+          "text": "Любимое мужское имя этого персонажа?",
+          "media_type": "image",
+          "media_url": "/static/videos/questions/memelniy_200.png"
         },
         {
           "price": 300,
-          "text": "Какая фраза из мема?",
+          "text": "Кого поздравлял с Днём Рождения  этот персонаж?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_300.jpg"
+          "media_url": "/static/images/questions/memelniy_300.png"
         },
         {
           "price": 400,
-          "text": "Кто автор этого мема?",
+          "text": "Собака какой породы потерпела ФИАСКО в этом месте",
           "media_type": "image",
           "media_url": "/static/images/questions/memelniy_400.png"
         },
         {
           "price": 500,
-          "text": "Из какого года этот мем?",
+          "text": "Рык какого животного показывает этот персонаж?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_500.jpg"
+          "media_url": "/static/images/questions/memelniy_500.png"
         }
       ]
     },
@@ -212,3 +212,4 @@
     }
   ]
 }
+
