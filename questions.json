@@ -1,63 +1,213 @@
 {
   "categories": [
     {
-      "name": "История",
+      "name": "Мэмэльный",
       "questions": [
-        { "price": 100, "text": "Кто считается первым космонавтом Земли?" },
-        { "price": 200, "text": "В каком году началась Великая Отечественная война?" },
-        { "price": 300, "text": "Как назывался древний город на месте современного Стамбула?" },
-        { "price": 400, "text": "Какой русский император отменил крепостное право?" },
-        { "price": 500, "text": "Назовите год распада СССР." }
+        {
+          "price": 100,
+          "text": "Какой мем изображён на картинке?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/memelniy_100.jpg"
+        },
+        {
+          "price": 200,
+          "text": "Из какого видео этот мем?",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/memelniy_200.mp4"
+        },
+        {
+          "price": 300,
+          "text": "Какая фраза из мема?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/memelniy_300.jpg"
+        },
+        {
+          "price": 400,
+          "text": "Кто автор этого мема?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/memelniy_400.png"
+        },
+        {
+          "price": 500,
+          "text": "Из какого года этот мем?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/memelniy_500.jpg"
+        }
       ]
     },
     {
-      "name": "Наука",
+      "name": "Ребусы",
       "questions": [
-        { "price": 100, "text": "Как называется наука о живой природе?" },
-        { "price": 200, "text": "Какой газ растения поглощают из воздуха при фотосинтезе?" },
-        { "price": 300, "text": "Кто сформулировал три закона движения, названные его именем?" },
-        { "price": 400, "text": "Как называется самая маленькая частица вещества, сохраняющая его свойства?" },
-        { "price": 500, "text": "Какая физическая теория связана с именем Альберта Эйнштейна?" }
+        {
+          "price": 100,
+          "text": "Разгадайте ребус",
+          "media_type": "image",
+          "media_url": "/static/images/questions/rebusy_100.jpg"
+        },
+        {
+          "price": 200,
+          "text": "Что зашифровано?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/rebusy_200.png"
+        },
+        {
+          "price": 300,
+          "text": "Какое слово загадано?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/rebusy_300.jpg"
+        },
+        {
+          "price": 400,
+          "text": "Сложный ребус",
+          "media_type": "image",
+          "media_url": "/static/images/questions/rebusy_400.jpg"
+        },
+        {
+          "price": 500,
+          "text": "Супер сложный ребус",
+          "media_type": "image",
+          "media_url": "/static/images/questions/rebusy_500.png"
+        }
       ]
     },
     {
-      "name": "Кино",
+      "name": "Что за кадр?",
       "questions": [
-        { "price": 100, "text": "Как зовут режиссёра трилогии «Властелин колец»?" },
-        { "price": 200, "text": "Какой советский фильм начинается со слов: «Я требую продолжения банкета!»?" },
-        { "price": 300, "text": "В каком фильме звучит фраза: «Я — твой отец»?" },
-        { "price": 400, "text": "Как называется премия, которую ежегодно вручает Американская киноакадемия?" },
-        { "price": 500, "text": "Назовите актёра, сыгравшего Тони Старка в киновселенной Marvel." }
+        {
+          "price": 100,
+          "text": "Из какого фильма этот кадр?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/kadr_100.jpg"
+        },
+        {
+          "price": 200,
+          "text": "Кто этот персонаж?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/kadr_200.jpg"
+        },
+        {
+          "price": 300,
+          "text": "Из какого сериала?",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/kadr_300.mp4"
+        },
+        {
+          "price": 400,
+          "text": "Назовите фильм",
+          "media_type": "image",
+          "media_url": "/static/images/questions/kadr_400.jpg"
+        },
+        {
+          "price": 500,
+          "text": "Из какого мультфильма?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/kadr_500.jpg"
+        }
       ]
     },
     {
-      "name": "Музыка",
+      "name": "Символ года",
       "questions": [
-        { "price": 100, "text": "Как называется человек, который дирижирует оркестром?" },
-        { "price": 200, "text": "Какой музыкальный инструмент имеет клавиши и струны и часто встречается в классической музыке?" },
-        { "price": 300, "text": "Кто написал знаменитую симфонию № 5 с узнаваемым мотивом «та-да-да-дам»?" },
-        { "price": 400, "text": "Как называется высокий женский голос в академическом пении?" },
-        { "price": 500, "text": "Назовите композитора, написавшего оперу «Борис Годунов»." }
+        {
+          "price": 100,
+          "text": "Какое животное - символ 2025 года?",
+          "media_type": "text",
+          "media_url": null
+        },
+        {
+          "price": 200,
+          "text": "Символ какого года на картинке?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/simvol_200.jpg"
+        },
+        {
+          "price": 300,
+          "text": "В каком году будет год Дракона?",
+          "media_type": "text",
+          "media_url": null
+        },
+        {
+          "price": 400,
+          "text": "Какое животное было символом 2020 года?",
+          "media_type": "image",
+          "media_url": "/static/images/questions/simvol_400.jpg"
+        },
+        {
+          "price": 500,
+          "text": "Сколько животных в восточном календаре?",
+          "media_type": "text",
+          "media_url": null
+        }
       ]
     },
     {
-      "name": "Спорт",
+      "name": "Меломан",
       "questions": [
-        { "price": 100, "text": "Сколько игроков одновременно находится на поле у одной команды в футболе?" },
-        { "price": 200, "text": "Какой вид спорта связан с турнирями Wimbledon и Roland Garros?" },
-        { "price": 300, "text": "В каком городе проходили Олимпийские игры 1980 года?" },
-        { "price": 400, "text": "Как называется удар в волейболе, когда игрок посылает мяч сверху вниз одной рукой?" },
-        { "price": 500, "text": "Назовите рекордсмена по количеству золотых медалей на Олимпийских играх (плавание)." }
+        {
+          "price": 100,
+          "text": "Какая песня играет?",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/meloman_100.mp3"
+        },
+        {
+          "price": 200,
+          "text": "Кто исполнитель?",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/meloman_200.mp3"
+        },
+        {
+          "price": 300,
+          "text": "Из какого фильма эта музыка?",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/meloman_300.mp3"
+        },
+        {
+          "price": 400,
+          "text": "Назовите композитора",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/meloman_400.mp3"
+        },
+        {
+          "price": 500,
+          "text": "Из какого года эта песня?",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/meloman_500.mp3"
+        }
       ]
     },
     {
-      "name": "Разное",
+      "name": "Ностальгия",
       "questions": [
-        { "price": 100, "text": "Столица Франции?" },
-        { "price": 200, "text": "Как называется самая длинная река в мире по длине?" },
-        { "price": 300, "text": "Какое химическое обозначение у воды?" },
-        { "price": 400, "text": "Как называются люди, изучающие звёзды и планеты?" },
-        { "price": 500, "text": "Какое устройство изобрёл Александр Белл в XIX веке?" }
+        {
+          "price": 100,
+          "text": "Посмотрите фрагмент мюзикла «Золушка» 2002 года и определите какое слово из диалога было пропущено",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/nostalgia_100.mp4"
+        },
+        {
+          "price": 200,
+          "text": "Посмотрите видео и ответьте на вопрос. Что сделает дед мороз после встречи с неожиданными гостями?",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/nostalgia_200.mp4"
+        },
+        {
+          "price": 300,
+          "text": "В какой рекламе начала 2000-х годов герои начинают с уютного семейного вечера с чтением сказки, но затем волшебным образом переносятся в яркую праздничную обстановку?",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/nostalgia_300.mp4"
+        },
+        {
+          "price": 400,
+          "text": "Посмотрите музыкальный фрагмент и определите, кто является партнером Виктории Дайнеко на новогоднюю пародию фильма «Мистер и Миссис Смит»",
+          "media_type": "video",
+          "media_url": "/static/videos/questions/nostalgia_400.mp4"
+        },
+        {
+          "price": 500,
+          "text": "Послушайте и угадайте песню. Все просто!",
+          "media_type": "audio",
+          "media_url": "/static/audio/questions/nostalgia_500.mp3"
+        }
       ]
     }
   ]
