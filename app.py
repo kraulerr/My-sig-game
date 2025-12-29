@@ -10,6 +10,7 @@ PLAYERS = {} # name -> {sid, avatar, team_id, is_admin}
 TEAMS = {} # team_id -> {members: [names], score}
 DISABLED_CELLS = set()
 ACTIVE_QUESTION = {'category': None, 'price': 0, 'team_id': None}
+GAME_STATE = {'finished': False}
 
 @app.route('/')
 def index(): 
@@ -22,6 +23,10 @@ def lobby():
 @app.route('/game')
 def game(): 
     return render_template('board.html')
+
+@app.route('/results')
+def results(): 
+    return render_template('results.html')
 
 @app.route('/questions')
 def get_questions():
@@ -83,6 +88,22 @@ def broadcast_game():
         'admin_sids': get_all_admin_sids()
     })
 
+def broadcast_results():
+    """Отправляет данные результатов"""
+    teams_data = {}
+    for tid, t in TEAMS.items():
+        team_name, team_avatar = get_team_name_and_avatar(tid)
+        teams_data[tid] = {
+            'name': team_name,
+            'avatar': team_avatar,
+            'score': t['score']
+        }
+    
+    socketio.emit('results_update', {
+        'teams': teams_data,
+        'admin_sids': get_all_admin_sids()
+    })
+
 def get_team_name_and_avatar(team_id):
     """Определяет название и аватар команды по преобладающему аватару игроков"""
     team = TEAMS[team_id]
@@ -124,6 +145,14 @@ def handle_join_game(data):
     if name in PLAYERS:
         PLAYERS[name]['sid'] = request.sid
     broadcast_game()
+
+@socketio.on('join_results')
+def handle_join_results(data):
+    """Подключение к экрану результатов"""
+    name = data.get('name')
+    if name in PLAYERS:
+        PLAYERS[name]['sid'] = request.sid
+    broadcast_results()
 
 @socketio.on('create_team')
 def handle_create_team():
@@ -249,6 +278,48 @@ def handle_submit(data):
     
     # Обновляем данные на доске
     broadcast_game()
+
+@socketio.on('check_game_finished')
+def check_game_finished():
+    """Проверяет, все ли вопросы закончились"""
+    try:
+        with open('questions.json', 'r', encoding='utf-8') as f:
+            questions_data = json.load(f)
+        
+        total_questions = 0
+        for cat in questions_data['categories']:
+            total_questions += len(cat['questions'])
+        
+        if len(DISABLED_CELLS) >= total_questions:
+            GAME_STATE['finished'] = True
+            socketio.emit('game_finished', {'url': '/results'})
+    except:
+        pass
+
+@socketio.on('restart_game')
+def handle_restart():
+    """Перезапуск игры - сброс очков и ячеек"""
+    global DISABLED_CELLS, ACTIVE_QUESTION, GAME_STATE
+    
+    # Сбрасываем очки команд
+    for tid in TEAMS:
+        TEAMS[tid]['score'] = 0
+    
+    # Очищаем закрытые ячейки
+    DISABLED_CELLS = set()
+    
+    # Сбрасываем активный вопрос
+    ACTIVE_QUESTION = {'category': None, 'price': 0, 'team_id': None}
+    
+    # Сбрасываем состояние игры
+    GAME_STATE = {'finished': False}
+    
+    socketio.emit('redirect_to_game', {'url': '/game'})
+
+@socketio.on('go_to_lobby')
+def handle_go_to_lobby():
+    """Возврат в лобби"""
+    socketio.emit('redirect_to_lobby', {'url': '/lobby'})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
