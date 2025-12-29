@@ -2,54 +2,291 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Вход в Свою Игру</title>
+    <title>🎄 Новогодняя Своя Игра</title>
     <style>
-        body { background: #1a1a2e; color: white; font-family: sans-serif; text-align: center; }
-        .setup-container { width: 300px; margin: 50px auto; background: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        h2 { color: #e94560; }
-        input { width: 90%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: none; font-size: 16px; }
-        .avatar-list { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .avatar-list img { width: 60px; height: 60px; cursor: pointer; border: 3px solid transparent; border-radius: 50%; transition: transform 0.2s; }
-        .avatar-list img:hover { transform: scale(1.1); }
-        .avatar-list img.selected { border-color: #e94560; box-shadow: 0 0 10px #e94560; }
-        button { background: #e94560; color: white; border: none; padding: 10px 20px; cursor: pointer; width: 100%; border-radius: 5px; font-size: 18px; font-weight: bold; }
-        button:hover { background: #c72c41; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #0a4d68 0%, #1a5f7a 50%, #0a4d68 100%);
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Снежинки */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        /* Контейнер */
+        .container {
+            background: rgba(26, 95, 122, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 3px solid #FFD700;
+            position: relative;
+            z-index: 10;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #FFD700;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+            50% { text-shadow: 0 0 30px #FFD700, 0 0 40px #FFA500; }
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #E0E0E0;
+        }
+        
+        /* Правила */
+        .rules {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        .rules h2 {
+            text-align: center;
+            color: #FFD700;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+        .rule-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(10px);
+        }
+        .rule-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            border: 3px solid #FFD700;
+            flex-shrink: 0;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+        .rule-text {
+            font-size: 18px;
+            color: #F0F0F0;
+            flex-grow: 1;
+        }
+        
+        /* Форма входа */
+        .entry-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        input[type="text"] {
+            padding: 15px;
+            font-size: 20px;
+            border-radius: 10px;
+            border: 3px solid #FFD700;
+            background: rgba(255, 255, 255, 0.9);
+            color: #0a4d68;
+            text-align: center;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 20px #FFD700;
+            transform: scale(1.05);
+        }
+        
+        .avatars {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .avatar-option {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .avatar-option:hover {
+            transform: scale(1.15) rotate(5deg);
+            border-color: #FFD700;
+        }
+        .avatar-option.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 30px #FFD700;
+            transform: scale(1.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0a4d68;
+            border: none;
+            padding: 18px 40px;
+            font-size: 24px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+            text-transform: uppercase;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #FFA500, #FFD700);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        
+        /* Ёлочки по углам */
+        .tree {
+            position: fixed;
+            font-size: 100px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        .tree.left { left: 20px; bottom: 20px; }
+        .tree.right { right: 20px; bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="setup-container">
-        <h2>Кто ты, воин?</h2>
-        <input type="text" id="username" placeholder="Введи своё имя">
-
-        <p>Выбери аватар:</p>
-        <div class="avatar-list">
-            <img src="/static/images/avatars/1.png" data-val="1.png" onclick="selectAvatar(this)" class="selected">
-            <img src="/static/images/avatars/2.png" data-val="2.png" onclick="selectAvatar(this)">
-            <img src="/static/images/avatars/3.png" data-val="3.png" onclick="selectAvatar(this)">
+    <!-- Ёлочки -->
+    <div class="tree left">🎄</div>
+    <div class="tree right">🎄</div>
+    
+    <div class="container">
+        <h1>🎄 Новогодняя Своя Игра 🎁</h1>
+        <p class="subtitle">Добро пожаловать в самую праздничную викторину!</p>
+        
+        <!-- Правила -->
+        <div class="rules">
+            <h2>✨ Правила ✨</h2>
+            
+            <div class="rule-item">
+                <img src="/static/images/rules/rule1.png" class="rule-icon" alt="Правило 1">
+                <div class="rule-text">🎅 Почувствуйте магию праздника!</div>
+            </div>
+            
+            <div class="rule-item">
+                <img src="/static/images/rules/rule2.png" class="rule-icon" alt="Правило 2">
+                <div class="rule-text">🎭 Создайте свою праздничную команду!</div>
+            </div>
+            
+            <div class="rule-item">
+                <img src="/static/images/rules/rule3.png" class="rule-icon" alt="Правило 3">
+                <div class="rule-text">🎉 Откройтесь для веселья и новых эмоций!</div>
+            </div>
         </div>
-
-        <button onclick="goLobby()">Войти в лобби</button>
+        
+        <!-- Форма входа -->
+        <div class="entry-form">
+            <input type="text" id="name-input" placeholder="🎅 Введите своё имя" maxlength="20">
+            
+            <div class="avatars">
+                <img src="/static/images/avatars/1.png" class="avatar-option" data-avatar="1.png" onclick="selectAvatar('1.png')">
+                <img src="/static/images/avatars/2.png" class="avatar-option" data-avatar="2.png" onclick="selectAvatar('2.png')">
+                <img src="/static/images/avatars/3.png" class="avatar-option" data-avatar="3.png" onclick="selectAvatar('3.png')">
+            </div>
+            
+            <button onclick="enterGame()">🎄 ВОЙТИ В ЛОББИ 🎄</button>
+        </div>
     </div>
 
     <script>
-        let currentAvatar = "1.png";
+        let selectedAvatar = null;
 
-        function selectAvatar(element) {
-            document.querySelectorAll('.avatar-list img').forEach(img => img.classList.remove('selected'));
-            element.classList.add('selected');
-            currentAvatar = element.getAttribute('data-val');
+        // Создание снежинок
+        function createSnowflakes() {
+            const snowflakeChars = ['❄', '❅', '❆', '✻', '✼', '❉'];
+            for (let i = 0; i < 30; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'em';
+                document.body.appendChild(snowflake);
+            }
+        }
+        createSnowflakes();
+
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`[data-avatar="${avatar}"]`).classList.add('selected');
         }
 
-        function goLobby() {
-            const name = document.getElementById('username').value.trim();
+        function enterGame() {
+            const name = document.getElementById('name-input').value.trim();
+            
             if (!name) {
-                alert("Пожалуйста, введи имя!");
+                alert('🎅 Введите своё имя!');
                 return;
             }
-            localStorage.setItem('my_name', name);
-            localStorage.setItem('my_avatar', currentAvatar);
-            window.location.href = "/lobby";
+            
+            if (!selectedAvatar) {
+                alert('🎄 Выберите аватар!');
+                return;
+            }
+            
+            localStorage.setItem('myname', name);
+            localStorage.setItem('myavatar', selectedAvatar);
+            window.location.href = '/lobby';
         }
+
+        // Автовыбор первого аватара
+        selectAvatar('1.png');
+        
+        // Enter для входа
+        document.getElementById('name-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enterGame();
+        });
     </script>
 </body>
 </html>

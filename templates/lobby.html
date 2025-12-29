@@ -2,260 +2,257 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Лобби игры</title>
+    <title>🎄 Лобби</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-        body { background: #1a1a2e; color: white; font-family: sans-serif; margin: 0; }
-        h1 { text-align: center; margin-top: 20px; color: #e94560; }
-
-        .players-container {
-            width: 60%;
-            margin: 20px auto;
-            background: #16213e;
-            border-radius: 10px;
+        body {
+            background: linear-gradient(135deg, #0a4d68 0%, #1a5f7a 50%, #0a4d68 100%);
+            color: white;
+            font-family: Arial;
+            margin: 0;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
-
-        .player-item {
+        
+        /* Снежинки */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1;
+            color: white;
+            font-size: 1em;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            font-size: 42px;
+            text-shadow: 0 0 20px #FFD700;
+            margin-bottom: 30px;
+            animation: glow 2s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #FFD700; }
+            50% { text-shadow: 0 0 30px #FFA500; }
+        }
+        
+        .container {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 10px;
-            border-bottom: 1px solid #0f3460;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
         }
-
-        .player-info {
+        .column {
+            flex: 1;
+            background: rgba(26, 95, 122, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h2 {
+            color: #FFD700;
+            margin-top: 0;
+            text-align: center;
+            font-size: 28px;
+        }
+        .player-card {
+            background: rgba(15, 52, 96, 0.8);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: 0.3s;
+            border: 2px solid transparent;
         }
-
-        .player-avatar {
+        .player-card:hover {
+            transform: translateX(5px);
+            border-color: #FFD700;
+        }
+        .player-card.admin {
+            border: 2px solid gold;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        .avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            border: 2px solid #FFD700;
         }
-
-        .admin-mark {
-            margin-left: 5px;
-            color: gold;
+        .team-card {
+            background: rgba(30, 58, 95, 0.8);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            transition: 0.3s;
         }
-
-        .status-label {
-            font-size: 14px;
-            color: #0fba81;
-            margin-left: 8px;
+        .team-card:hover {
+            border-color: #FFD700;
+            transform: scale(1.02);
         }
-
-        .status-not-ready {
-            color: #e9c46a;
+        .team-members {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
-
-        .kick-btn {
-            background: #e94560;
-            color: white;
+        .member-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #FFD700;
+        }
+        .btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0a4d68;
             border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+        }
+        .btn-sm {
             padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
+            font-size: 12px;
         }
-
-        .kick-btn:hover {
-            background: #c72c41;
+        .btn-admin {
+            background: gold;
+            color: #1a1a2e;
         }
-
-        .ready-btn {
-            margin: 20px auto;
-            display: block;
-            padding: 10px 30px;
-            font-size: 18px;
-            background: #0fba81;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .ready-btn.not-ready {
-            background: #e94560;
-        }
-
-        .timer-bar {
-            width: 60%;
-            margin: 10px auto;
-            height: 20px;
-            background: #2b2b3f;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .timer-fill {
-            height: 100%;
-            width: 100%;
-            background: #e94560;
-            transition: width 1s linear;
-        }
-
-        .host-panel {
-            width: 60%;
-            margin: 20px auto;
+        #admin-panel {
             text-align: center;
-            color: #e94560;
+            margin-top: 20px;
+            position: relative;
+            z-index: 10;
         }
-
-        .force-start-btn {
-            padding: 10px 30px;
-            font-size: 18px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .force-start-btn:hover {
-            background: #c72c41;
+        #admin-panel .btn {
+            font-size: 20px;
+            padding: 15px 40px;
         }
     </style>
 </head>
 <body>
-    <h1>Комната ожидания</h1>
-
-    <div class="players-container">
-        <h2>Игроки онлайн:</h2>
-        <div id="players"></div>
+    <h1>🎄 Комната ожидания 🎁</h1>
+    
+    <div class="container">
+        <div class="column">
+            <h2>👥 Игроки</h2>
+            <div id="players-list"></div>
+        </div>
+        
+        <div class="column">
+            <h2>🏆 Команды</h2>
+            <div id="teams-list"></div>
+            <button class="btn" id="create-team-btn" style="display:none" onclick="createTeam()">➕ Создать команду</button>
+        </div>
     </div>
-
-    <button id="readyBtn" class="ready-btn not-ready">Я ГОТОВ ✅</button>
-
-    <div class="timer-bar" id="timerBar">
-        <div class="timer-fill" id="timerFill"></div>
-    </div>
-
-    <div class="host-panel" id="hostPanel" style="display:none;">
-        <h3>Панель ведущего</h3>
-        <button class="force-start-btn" id="forceStartBtn">ПРИНУДИТЕЛЬНЫЙ СТАРТ 🚀</button>
+    
+    <div id="admin-panel" style="display:none">
+        <button class="btn" onclick="startGame()">🎄 НАЧАТЬ ИГРУ 🎁</button>
     </div>
 
     <script>
         const socket = io();
+        const myName = localStorage.getItem('myname');
+        let isAdmin = false;
 
-        const myName = localStorage.getItem('my_name');
-        const myAvatar = localStorage.getItem('my_avatar');
-        if (!myName || !myAvatar) {
-            window.location.href = "/";
+        // Снежинки
+        function createSnowflakes() {
+            const snowflakeChars = ['❄', '❅', '❆'];
+            for (let i = 0; i < 20; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(snowflake);
+            }
+        }
+        createSnowflakes();
+
+        socket.emit('join_lobby', {
+            name: myName,
+            avatar: localStorage.getItem('myavatar')
+        });
+
+        socket.on('lobby_update', (data) => {
+            isAdmin = data.admin_sids.includes(socket.id);
+            
+            const pList = document.getElementById('players-list');
+            pList.innerHTML = '';
+            
+            for (let [name, p] of Object.entries(data.players)) {
+                if (p.team_id) continue;
+                
+                const isPlayerAdmin = p.is_admin;
+                const cardClass = isPlayerAdmin ? 'player-card admin' : 'player-card';
+                
+                pList.innerHTML += `
+                    <div class="${cardClass}">
+                        <img src="/static/images/avatars/${p.avatar}" class="avatar">
+                        <span>${name} ${isPlayerAdmin ? '👑' : ''}</span>
+                        ${isAdmin && !isPlayerAdmin ? `<button class="btn btn-sm btn-admin" onclick="makeAdmin('${name}')">👑</button>` : ''}
+                        ${isAdmin ? getTeamButtons(name, data.teams) : ''}
+                    </div>
+                `;
+            }
+            
+            const tList = document.getElementById('teams-list');
+            tList.innerHTML = '';
+            
+            for (let [tid, team] of Object.entries(data.teams)) {
+                tList.innerHTML += `
+                    <div class="team-card">
+                        <h3>🎄 Команда ${tid.slice(-1)}</h3>
+                        <div>Игроков: ${team.members.length}</div>
+                        <div class="team-members">
+                            ${team.members.map(n => {
+                                const player = data.players[n];
+                                return `<img src="/static/images/avatars/${player.avatar}" class="member-avatar" title="${n}">`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('create-team-btn').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('admin-panel').style.display = isAdmin ? 'block' : 'none';
+        });
+
+        function getTeamButtons(playerName, teams) {
+            let btns = '';
+            for (let tid in teams) {
+                btns += `<button class="btn btn-sm" onclick="assignTo('${playerName}', '${tid}')">→ ${tid.slice(-1)}</button>`;
+            }
+            return btns;
         }
 
-        socket.emit('join_request', { name: myName, avatar: myAvatar });
-        socket.emit('request_players');
-
-        const playersContainer = document.getElementById('players');
-        const readyBtn = document.getElementById('readyBtn');
-        const hostPanel = document.getElementById('hostPanel');
-        const forceStartBtn = document.getElementById('forceStartBtn');
-        const timerBar = document.getElementById('timerBar');
-        const timerFill = document.getElementById('timerFill');
-
-        let countdownInterval = null;
-
-        readyBtn.onclick = () => {
-            socket.emit('toggle_ready');
-        };
-
-        forceStartBtn.onclick = () => {
-            socket.emit('force_start');
-        };
-
-        socket.on('update_player_list', data => {
-            const players = data.players || {};
-            const adminId = data.admin_id;
-            playersContainer.innerHTML = '';
-
-            const myInfo = players[socket.id];
-            const isReadyLocal = !!(myInfo && myInfo.is_ready);
-            readyBtn.classList.toggle('not-ready', !isReadyLocal);
-            readyBtn.textContent = isReadyLocal ? "Я НЕ ГОТОВ ❌" : "Я ГОТОВ ✅";
-
-            Object.entries(players).forEach(([sid, info]) => {
-                const row = document.createElement('div');
-                row.className = 'player-item';
-
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'player-info';
-
-                const avatarImg = document.createElement('img');
-                avatarImg.className = 'player-avatar';
-                avatarImg.src = "/static/images/avatars/" + info.avatar;
-
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = info.name;
-
-                infoDiv.appendChild(avatarImg);
-                infoDiv.appendChild(nameSpan);
-
-                if (info.is_admin) {
-                    const crown = document.createElement('span');
-                    crown.className = 'admin-mark';
-                    crown.textContent = "👑";
-                    infoDiv.appendChild(crown);
-                }
-
-                const status = document.createElement('span');
-                status.className = 'status-label ' + (info.is_ready ? '' : 'status-not-ready');
-                status.textContent = info.is_ready ? 'готов' : 'не готов';
-                infoDiv.appendChild(status);
-
-                row.appendChild(infoDiv);
-
-                if (socket.id === adminId && !info.is_admin) {
-                    const kickBtn = document.createElement('button');
-                    kickBtn.className = 'kick-btn';
-                    kickBtn.textContent = 'Выгнать';
-                    kickBtn.onclick = () => socket.emit('kick_player', { target_id: sid });
-                    row.appendChild(kickBtn);
-                }
-
-                playersContainer.appendChild(row);
-            });
-
-            hostPanel.style.display = socket.id === adminId ? 'block' : 'none';
-        });
-
-        socket.on('start_timer_signal', data => {
-            const seconds = data.seconds || 10;
-            timerBar.style.display = 'block';
-            timerFill.style.width = '100%';
-            if (countdownInterval) clearInterval(countdownInterval);
-
-            let remain = seconds;
-            countdownInterval = setInterval(() => {
-                remain -= 1;
-                const percent = Math.max(0, (remain / seconds) * 100);
-                timerFill.style.width = percent + '%';
-
-                if (remain <= 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = '/game';
-                }
-            }, 1000);
-        });
-
-        socket.on('stop_timer_signal', () => {
-            timerBar.style.display = 'none';
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+        function createTeam() { socket.emit('create_team'); }
+        function assignTo(playerName, teamId) { socket.emit('assign_to_team', { player_name: playerName, team_id: teamId }); }
+        function makeAdmin(playerName) {
+            if (confirm(`Назначить ${playerName} админом?`)) {
+                socket.emit('make_admin', { player_name: playerName });
             }
-        });
-
-        socket.on('redirect_to_game', data => {
-            window.location.href = data.url;
-        });
-
-        socket.on('redirect', data => {
-            window.location.href = data.url;
-        });
+        }
+        function startGame() { socket.emit('start_game'); }
+        socket.on('redirect_to_game', (d) => window.location.href = d.url);
     </script>
 </body>
 </html>

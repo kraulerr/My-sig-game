@@ -1,172 +1,204 @@
-from flask import Flask, render_template, request, url_for, jsonify
+import json, os, time
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
-import json, os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-very-secret-key'
+app.config['SECRET_KEY'] = 'ny2025-secret'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# PLAYERS[sid] = {
-#   'name': ...,
-#   'avatar': ...,
-#   'score': 0,
-#   'is_ready': False,
-#   'is_admin': False
-# }
-PLAYERS = {}
-
-
-# ----------------- ROUTES -----------------
+PLAYERS = {}  # name -> {sid, avatar, team_id, is_admin}
+TEAMS = {}  # team_id -> {members: [names], score}
+DISABLED_CELLS = set()
+ACTIVE_QUESTION = {'category': None, 'price': 0, 'team_id': None}
 
 @app.route('/')
-def index():
-    return render_template('index.html')
-
+def index(): return render_template('index.html')
 
 @app.route('/lobby')
-def lobby():
-    return render_template('lobby.html')
-
+def lobby(): return render_template('lobby.html')
 
 @app.route('/game')
-def game():
-    return render_template('board.html')
-
+def game(): return render_template('board.html')
 
 @app.route('/questions')
 def get_questions():
-    path = os.path.join(os.path.dirname(__file__), 'questions.json')
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        data = {"categories": []}
-    return jsonify(data)
+        with open('questions.json', 'r', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except: return jsonify({"categories": []})
 
+def get_all_admin_sids():
+    """Возвращает список всех SID админов"""
+    return [p['sid'] for p in PLAYERS.values() if p.get('is_admin')]
 
-# ----------------- HELPERS -----------------
-
-def broadcast_players():
-    """Отправляет всем список игроков и id админа."""
-    admin_sid = None
-    for sid, pdata in PLAYERS.items():
-        if pdata.get('is_admin'):
-            admin_sid = sid
-            break
-
-    socketio.emit('update_player_list', {
-        'players': PLAYERS,
-        'admin_id': admin_sid
+def broadcast_lobby():
+    teams_data = {}
+    for tid, t in TEAMS.items():
+        # В лобби НЕ показываем название команды и аватар
+        teams_data[tid] = {
+            'members': t['members'],
+            'score': t['score']
+        }
+    
+    players_data = {}
+    for name, p in PLAYERS.items():
+        players_data[name] = {
+            'avatar': p['avatar'],
+            'team_id': p.get('team_id'),
+            'is_admin': p.get('is_admin', False)
+        }
+    
+    socketio.emit('lobby_update', {
+        'players': players_data,
+        'teams': teams_data,
+        'admin_sids': get_all_admin_sids()
     })
 
+def broadcast_game():
+    """Отправляет данные на игровое поле"""
+    teams_data = {}
+    for tid, t in TEAMS.items():
+        # Вычисляем название и аватар команды ТОЛЬКО на доске
+        team_name, team_avatar = get_team_name_and_avatar(tid)
+        teams_data[tid] = {
+            'name': team_name,
+            'avatar': team_avatar,
+            'score': t['score']
+        }
+    
+    # Список админов для отдельного отображения
+    admins_data = []
+    for name, p in PLAYERS.items():
+        if p.get('is_admin'):
+            admins_data.append({
+                'name': name,
+                'avatar': p['avatar']
+            })
+    
+    socketio.emit('game_update', {
+        'teams': teams_data,
+        'admins': admins_data,
+        'disabled_cells': list(DISABLED_CELLS),
+        'admin_sids': get_all_admin_sids()
+    })
 
-# ----------------- SOCKET.IO EVENTS -----------------
+def get_team_name_and_avatar(team_id):
+    """Определяет название и аватар команды по преобладающему аватару игроков"""
+    team = TEAMS[team_id]
+    avatars = [PLAYERS[n]['avatar'] for n in team['members'] if not PLAYERS[n].get('is_admin')]
+    
+    if not avatars:
+        return f'Команда {team_id[-1]}', 'team_default.png'
+    
+    # Подсчитываем самый частый аватар
+    counts = {}
+    for av in avatars:
+        counts[av] = counts.get(av, 0) + 1
+    most_common = max(counts, key=counts.get)
+    
+    if most_common == '1.png':
+        return 'Дикие кошки', 'team_cats.png'
+    elif most_common == '2.png':
+        return 'Хитрые змеи', 'team_snakes.png'
+    else:
+        return 'Пернатое содружество', 'team_birds.png'
 
-@socketio.on('connect')
-def on_connect():
-    print(f"[SocketIO]: клиент подключился, sid = {request.sid}")
-
-
-@socketio.on('join_request')
+@socketio.on('join_lobby')
 def handle_join(data):
-    """Игрок заходит в лобби (вызывается из lobby.html)."""
-    print("[join_request]:", data)
     name = data.get('name')
-    avatar = data.get('avatar')
-    if not name or not avatar:
-        return
+    if name in PLAYERS:
+        PLAYERS[name]['sid'] = request.sid
+    else:
+        PLAYERS[name] = {
+            'sid': request.sid,
+            'avatar': data.get('avatar', '1.png'),
+            'team_id': None,
+            'is_admin': len(PLAYERS) == 0  # Первый игрок = админ
+        }
+    broadcast_lobby()
 
-    is_admin = not PLAYERS  # первый зашедший — админ
+@socketio.on('join_game')
+def handle_join_game(data):
+    """Специальное событие для подключения к игровому полю"""
+    name = data.get('name')
+    if name in PLAYERS:
+        PLAYERS[name]['sid'] = request.sid
+    broadcast_game()
 
-    PLAYERS[request.sid] = {
-        'name': name,
-        'avatar': avatar,
-        'score': 0,
-        'is_ready': False,
-        'is_admin': is_admin
+@socketio.on('create_team')
+def handle_create_team():
+    tid = f"team_{len(TEAMS) + 1}"
+    TEAMS[tid] = {
+        'members': [],
+        'score': 0
     }
-    print(f"[Игрок]: '{name}' подключился. Всего игроков: {len(PLAYERS)}.")
-    broadcast_players()
+    broadcast_lobby()
 
+@socketio.on('assign_to_team')
+def handle_assign(data):
+    player_name = data['player_name']
+    team_id = data['team_id']
+    
+    # Удалить из старой команды
+    old_team = PLAYERS[player_name].get('team_id')
+    if old_team and old_team in TEAMS:
+        TEAMS[old_team]['members'].remove(player_name)
+    
+    # Добавить в новую
+    PLAYERS[player_name]['team_id'] = team_id
+    if team_id:
+        TEAMS[team_id]['members'].append(player_name)
+    
+    broadcast_lobby()
 
-@socketio.on('request_players')
-def handle_request_players():
-    broadcast_players()
+@socketio.on('make_admin')
+def handle_make_admin(data):
+    """Назначение нового админа"""
+    player_name = data['player_name']
+    if player_name in PLAYERS:
+        PLAYERS[player_name]['is_admin'] = True
+        # Убираем админа из команды игроков
+        old_team = PLAYERS[player_name].get('team_id')
+        if old_team and old_team in TEAMS:
+            TEAMS[old_team]['members'].remove(player_name)
+        PLAYERS[player_name]['team_id'] = None
+        broadcast_lobby()
 
+@socketio.on('start_game')
+def handle_start():
+    socketio.emit('redirect_to_game', {'url': '/game'})
 
-@socketio.on('toggle_ready')
-def handle_toggle_ready():
-    """Игрок нажимает кнопку 'ГОТОВ / НЕ ГОТОВ'."""
-    if request.sid not in PLAYERS:
-        print("[toggle_ready]: неизвестный sid")
-        return
+@socketio.on('select_question')
+def handle_select(data):
+    ACTIVE_QUESTION.update({
+        'category': data['category'],
+        'price': int(data['price']),
+        'team_id': None
+    })
+    socketio.emit('question_opened', data)
 
-    PLAYERS[request.sid]['is_ready'] = not PLAYERS[request.sid]['is_ready']
-    state = "готов" if PLAYERS[request.sid]['is_ready'] else "не готов"
-    print(f"[toggle_ready]: {PLAYERS[request.sid]['name']} теперь {state}")
-
-    # Все готовы и игроков больше одного?
-    all_ready = len(PLAYERS) > 1 and all(p.get('is_ready') for p in PLAYERS.values())
-
-    if all_ready:
-        print("[toggle_ready]: все готовы, запускаем таймер на клиентах")
-        emit('start_timer_signal', {'seconds': 10}, broadcast=True)
+@socketio.on('toggle_cell')
+def handle_toggle(data):
+    cell = (data['category'], int(data['price']))
+    if cell in DISABLED_CELLS:
+        DISABLED_CELLS.remove(cell)
     else:
-        print("[toggle_ready]: не все готовы, останавливаем таймер")
-        emit('stop_timer_signal', broadcast=True)
+        DISABLED_CELLS.add(cell)
+    broadcast_game()
 
-    broadcast_players()
+@socketio.on('start_team_answer')
+def handle_team_answer(data):
+    ACTIVE_QUESTION['team_id'] = data['team_id']
+    socketio.emit('timer_start', {'team_id': data['team_id'], 'duration': 30})
 
-
-@socketio.on('kick_player')
-def handle_kick_player(data):
-    """Админ выгоняет игрока из лобби."""
-    requester_sid = request.sid
-    target_sid = data.get('target_id')
-
-    if not PLAYERS.get(requester_sid, {}).get('is_admin'):
-        print("[kick_player]: неадмин, игнорируем")
-        return
-
-    if target_sid == requester_sid:
-        print("[kick_player]: попытка кикнуть самого себя")
-        return
-
-    if target_sid in PLAYERS:
-        kicked_name = PLAYERS[target_sid]['name']
-        print(f"[Админ]: кикнул '{kicked_name}'")
-        emit('redirect', {'url': url_for('index')}, to=target_sid)
-        socketio.disconnect(sid=target_sid)
-    else:
-        print("[kick_player]: целевой sid не найден")
-
-
-@socketio.on('force_start')
-def handle_force_start():
-    """Принудительный старт игры (только для админа)."""
-    if PLAYERS.get(request.sid, {}).get('is_admin'):
-        print("[Админ]: принудительный старт игры.")
-        socketio.emit('redirect_to_game', {'url': url_for('game')})
-    else:
-        print("[force_start]: неадмин, игнорируем")
-
-
-@socketio.on('disconnect')
-def handle_disconnect(reason=None):
-    if request.sid in PLAYERS:
-        name = PLAYERS[request.sid]['name']
-        was_admin = PLAYERS[request.sid]['is_admin']
-        del PLAYERS[request.sid]
-        print(f"[Игрок]: '{name}' отключился. Осталось: {len(PLAYERS)}.")
-
-        if was_admin and PLAYERS and not any(p.get('is_admin') for p in PLAYERS.values()):
-            new_admin_sid = next(iter(PLAYERS))
-            PLAYERS[new_admin_sid]['is_admin'] = True
-            print(f"[Сервер]: новый админ — '{PLAYERS[new_admin_sid]['name']}'")
-
-        broadcast_players()
-
+@socketio.on('submit_answer')
+def handle_submit(data):
+    if data['correct'] and ACTIVE_QUESTION['team_id']:
+        TEAMS[ACTIVE_QUESTION['team_id']]['score'] += ACTIVE_QUESTION['price']
+    
+    socketio.emit('timer_stop', {})
+    ACTIVE_QUESTION.update({'category': None, 'price': 0, 'team_id': None})
+    broadcast_game()
 
 if __name__ == '__main__':
-    print("Запуск на http://localhost:5000")
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

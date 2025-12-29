@@ -2,55 +2,411 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Игровое поле</title>
+    <title>Своя Игра - Игровое поле</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
-        body { background: #1a1a2e; color: white; font-family: sans-serif; margin: 0; }
-        h1 { text-align: center; margin-top: 20px; color: #e94560; }
-
-        .board-grid {
-            width: 90%;
-            margin: 30px auto;
-            display: grid;
-            grid-template-columns: 2fr repeat(5, 1fr);
-            grid-template-rows: repeat(6, 80px);
-            gap: 5px;
-        }
-
-        .cell {
-            border: 1px solid #0f3460;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            background: #16213e;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
-
-        .category-cell {
+        
+        .board-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .cell {
+            background: #16213e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            border-radius: 8px;
+            min-height: 80px;
+            position: relative;
+            transition: 0.2s;
+        }
+        .cell-category {
             background: #0f3460;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+        .cell-price {
+            color: #f8b400;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        body.admin .cell-price:hover {
+            transform: scale(1.05);
+            background: #1b2a4e;
+        }
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e94560;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        body.admin .close-btn { display: flex; }
+        .cell-disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            background: #0a0e1a !important;
+        }
+        
+        .teams-bar {
+            background: #0f3460;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            border-top: 3px solid #e94560;
+            min-height: 140px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team-card {
+            text-align: center;
+            padding: 10px 20px;
+            background: #16213e;
+            border-radius: 10px;
+            transition: 0.3s;
+            min-width: 180px;
+        }
+        .team-card.active {
+            border: 4px solid gold;
+            box-shadow: 0 0 20px gold;
+        }
+        .team-avatar {
+            width: 100px;
+            height: 70px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .team-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .team-score {
+            font-size: 32px;
+            color: gold;
             font-weight: bold;
         }
+        
+        /* Админы отдельно */
+        .admins-section {
+            background: #1a1a2e;
+            border: 2px solid gold;
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+        .admins-section h3 {
+            color: gold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .admin-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        .admin-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #modal.active { display: flex; }
+        #q-text {
+            color: #f8b400;
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        #team-select {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .team-btn {
+            background: #0fba81;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .team-btn:hover {
+            background: #0d9968;
+            transform: scale(1.05);
+        }
+        
+        #timer {
+            font-size: 80px;
+            color: #e94560;
+            margin: 30px 0;
+            font-weight: bold;
+            display: none;
+        }
+        #timer.active { display: block; }
+        
+        #answer-controls {
+            display: none;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        #answer-controls.active { display: flex; }
+        .answer-btn {
+            padding: 20px 50px;
+            font-size: 28px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .answer-btn.correct {
+            background: #0fba81;
+            color: white;
+        }
+        .answer-btn.correct:hover { background: #0d9968; }
+        .answer-btn.wrong {
+            background: #e94560;
+            color: white;
+        }
+        .answer-btn.wrong:hover { background: #c72c41; }
+        
+        #answering-team {
+            font-size: 28px;
+            color: gold;
+            margin-top: 20px;
+            display: none;
+        }
+        #answering-team.active { display: block; }
     </style>
 </head>
 <body>
-    <h1>Игровое поле</h1>
-    <div class="board-grid">
-        <div class="cell category-cell">Категория 1</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
-
-        <div class="cell category-cell">Категория 2</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
-
-        <div class="cell category-cell">Категория 3</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
-
-        <div class="cell category-cell">Категория 4</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
-
-        <div class="cell category-cell">Категория 5</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
-
-        <div class="cell category-cell">Категория 6</div>
-        <div class="cell">100</div><div class="cell">200</div><div class="cell">300</div><div class="cell">400</div><div class="cell">500</div>
+    <div class="board-container">
+        <div class="board" id="board"></div>
     </div>
+    
+    <div id="modal">
+        <h1 id="q-text"></h1>
+        <div id="team-select"></div>
+        <div id="timer"></div>
+        <div id="answering-team"></div>
+        <div id="answer-controls">
+            <button class="answer-btn correct" onclick="submitAnswer(true)">✅ ПРАВИЛЬНО</button>
+            <button class="answer-btn wrong" onclick="submitAnswer(false)">❌ НЕПРАВИЛЬНО</button>
+        </div>
+    </div>
+    
+    <div class="teams-bar" id="teams"></div>
+
+    <script>
+        const socket = io();
+        const myName = localStorage.getItem('myname');
+        let isAdmin = false;
+        let timerInterval = null;
+        let teamsData = {};
+
+        // ВАЖНО: Используем join_game вместо join_lobby
+        socket.emit('join_game', {
+            name: myName,
+            avatar: localStorage.getItem('myavatar')
+        });
+
+        socket.on('game_update', (data) => {
+            teamsData = data.teams;
+            
+            if (data.admin_sids.includes(socket.id)) {
+                isAdmin = true;
+                document.body.classList.add('admin');
+            }
+            
+            renderTeams(data.teams, data.admins);
+            
+            data.disabled_cells.forEach(([cat, price]) => {
+                const cell = document.querySelector(`[data-cat="${cat}"][data-price="${price}"]`);
+                if (cell) cell.classList.add('cell-disabled');
+            });
+        });
+
+        function renderTeams(teams, admins) {
+            const teamsBar = document.getElementById('teams');
+            teamsBar.innerHTML = '';
+            
+            // Команды игроков
+            for (let [tid, team] of Object.entries(teams)) {
+                teamsBar.innerHTML += `
+                    <div class="team-card" id="team-${tid}">
+                        <img src="/static/images/teams/${team.avatar}" class="team-avatar" onerror="this.src='/static/images/avatars/1.png'">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-score">${team.score}</div>
+                    </div>
+                `;
+            }
+            
+            // Админы отдельно
+            if (admins && admins.length > 0) {
+                let adminsHtml = '<div class="admins-section"><h3>👑 Ведущие</h3>';
+                admins.forEach(admin => {
+                    adminsHtml += `
+                        <div class="admin-item">
+                            <img src="/static/images/avatars/${admin.avatar}" class="admin-avatar">
+                            <span>${admin.name}</span>
+                        </div>
+                    `;
+                });
+                adminsHtml += '</div>';
+                teamsBar.innerHTML += adminsHtml;
+            }
+        }
+
+        fetch('/questions').then(r => r.json()).then(data => {
+            const board = document.getElementById('board');
+            
+            data.categories.forEach(cat => {
+                board.innerHTML += `<div class="cell cell-category">${cat.name}</div>`;
+            });
+            
+            for (let i = 0; i < 5; i++) {
+                data.categories.forEach(cat => {
+                    const q = cat.questions[i];
+                    board.innerHTML += `
+                        <div class="cell cell-price" data-cat="${cat.name}" data-price="${q.price}" onclick="selectCell('${cat.name}', ${q.price})">
+                            ${q.price}
+                            <div class="close-btn" onclick="event.stopPropagation(); toggleCell('${cat.name}', ${q.price})">✖</div>
+                        </div>
+                    `;
+                });
+            }
+        });
+
+        function selectCell(cat, price) {
+            if (!isAdmin) return;
+            socket.emit('select_question', { category: cat, price: price });
+        }
+
+        function toggleCell(cat, price) {
+            if (!isAdmin) return;
+            socket.emit('toggle_cell', { category: cat, price: price });
+        }
+
+        socket.on('question_opened', (data) => {
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('q-text').innerText = `${data.category}: ${data.price}`;
+            
+            if (isAdmin) {
+                const teamSelect = document.getElementById('team-select');
+                teamSelect.innerHTML = '<h2 style="width:100%; text-align:center; color: white;">Какая команда отвечает?</h2>';
+                
+                for (let [tid, team] of Object.entries(teamsData)) {
+                    teamSelect.innerHTML += `
+                        <button class="team-btn" onclick="startTeamAnswer('${tid}')">
+                            ${team.name}
+                        </button>
+                    `;
+                }
+            }
+        });
+
+        function startTeamAnswer(teamId) {
+            socket.emit('start_team_answer', { team_id: teamId });
+        }
+
+        socket.on('timer_start', (data) => {
+            document.getElementById('team-select').style.display = 'none';
+            document.getElementById('timer').classList.add('active');
+            document.getElementById('answering-team').classList.add('active');
+            document.getElementById('answering-team').innerText = `Отвечает: ${teamsData[data.team_id].name}`;
+            
+            if (isAdmin) {
+                document.getElementById('answer-controls').classList.add('active');
+            }
+            
+            document.querySelectorAll('.team-card').forEach(t => t.classList.remove('active'));
+            document.getElementById(`team-${data.team_id}`).classList.add('active');
+            
+            let timeLeft = data.duration;
+            document.getElementById('timer').innerText = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (isAdmin) {
+                        submitAnswer(false);
+                    }
+                }
+            }, 1000);
+        });
+
+        function submitAnswer(correct) {
+            clearInterval(timerInterval);
+            socket.emit('submit_answer', { correct: correct });
+        }
+
+        socket.on('timer_stop', () => {
+            clearInterval(timerInterval);
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('timer').classList.remove('active');
+            document.getElementById('answering-team').classList.remove('active');
+            document.getElementById('answer-controls').classList.remove('active');
+            document.getElementById('team-select').style.display = 'flex';
+            
+            document.querySelectorAll('.team-card').forEach(t => t.classList.remove('active'));
+        });
+    </script>
 </body>
 </html>
