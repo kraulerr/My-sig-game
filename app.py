@@ -167,12 +167,36 @@ def handle_start():
 
 @socketio.on('select_question')
 def handle_select(data):
-    ACTIVE_QUESTION.update({
-        'category': data['category'],
-        'price': int(data['price']),
-        'team_id': None
-    })
-    socketio.emit('question_opened', data)
+    # Загружаем полные данные вопроса из questions.json
+    try:
+        with open('questions.json', 'r', encoding='utf-8') as f:
+            questions_data = json.load(f)
+        
+        question = None
+        for cat in questions_data['categories']:
+            if cat['name'] == data['category']:
+                for q in cat['questions']:
+                    if q['price'] == int(data['price']):
+                        question = q
+                        break
+        
+        ACTIVE_QUESTION.update({
+            'category': data['category'],
+            'price': int(data['price']),
+            'team_id': None
+        })
+        
+        # Отправляем вопрос с медиа-данными
+        socketio.emit('question_opened', {
+            'category': data['category'],
+            'price': int(data['price']),
+            'text': question.get('text', ''),
+            'media_type': question.get('media_type', 'text'),
+            'media_url': question.get('media_url')
+        })
+    
+    except Exception as e:
+        print(f"Error loading question: {e}")
 
 @socketio.on('toggle_cell')
 def handle_toggle(data):
@@ -224,3 +248,4 @@ def handle_submit(data):
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
