@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты игры</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: gold;
+            position: absolute;
+            animation: fall 3s linear infinite;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .results-container {
+            text-align: center;
+            max-width: 900px;
+            padding: 40px;
+            background: rgba(15, 52, 96, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(248, 180, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: gold;
+            text-shadow: 0 0 20px gold;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px gold; }
+            50% { text-shadow: 0 0 40px gold, 0 0 60px gold; }
+        }
+        
+        .winner {
+            font-size: 48px;
+            margin: 30px 0;
+            color: #f8b400;
+        }
+        
+        .winner-avatar {
+            width: 200px;
+            height: 150px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 5px solid gold;
+            box-shadow: 0 0 30px gold;
+        }
+        
+        .scores-list {
+            margin: 40px 0;
+            text-align: left;
+            display: inline-block;
+        }
+        
+        .score-item {
+            background: #16213e;
+            padding: 15px 30px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            min-width: 400px;
+            transition: 0.3s;
+        }
+        
+        .score-item:hover {
+            transform: scale(1.05);
+            background: #1b2a4e;
+        }
+        
+        .score-item.first {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #1a1a2e;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .score-item.second {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        
+        .score-item.third {
+            background: linear-gradient(135deg, #cd7f32 0%, #e5a161 100%);
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        
+        .team-name-result {
+            font-size: 24px;
+        }
+        
+        .team-score-result {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .buttons {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 20px 50px;
+            font-size: 24px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        
+        .btn-restart {
+            background: #0fba81;
+            color: white;
+        }
+        
+        .btn-restart:hover {
+            background: #0d9968;
+            transform: scale(1.05);
+        }
+        
+        .btn-lobby {
+            background: #e94560;
+            color: white;
+        }
+        
+        .btn-lobby:hover {
+            background: #c72c41;
+            transform: scale(1.05);
+        }
+        
+        .admin-only { display: none; }
+        body.admin .admin-only { display: flex; }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <h1>🏆 ИГРА ОКОНЧЕНА! 🏆</h1>
+        
+        <div id="winner-section">
+            <div class="winner">Победитель:</div>
+            <div class="winner" id="winner-name"></div>
+            <img id="winner-avatar" class="winner-avatar" src="" alt="Победитель">
+            <div class="winner">Счёт: <span id="winner-score"></span></div>
+        </div>
+        
+        <div class="scores-list" id="scores-list"></div>
+        
+        <div class="buttons admin-only">
+            <button class="btn btn-restart" onclick="restartGame()">🔄 Новая игра</button>
+            <button class="btn btn-lobby" onclick="goToLobby()">🏠 В лобби</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const myName = localStorage.getItem('myname');
+        let isAdmin = false;
+
+        socket.emit('join_results', {
+            name: myName,
+            avatar: localStorage.getItem('myavatar')
+        });
+
+        socket.on('results_update', (data) => {
+            if (data.admin_sids.includes(socket.id)) {
+                isAdmin = true;
+                document.body.classList.add('admin');
+            }
+            
+            displayResults(data.teams);
+            createConfetti();
+        });
+
+        function displayResults(teams) {
+            // Сортируем команды по счёту
+            const sortedTeams = Object.entries(teams).sort((a, b) => b[1].score - a[1].score);
+            
+            if (sortedTeams.length > 0) {
+                const winner = sortedTeams[0][1];
+                document.getElementById('winner-name').textContent = winner.name;
+                document.getElementById('winner-score').textContent = winner.score;
+                document.getElementById('winner-avatar').src = `/static/images/teams/${winner.avatar}`;
+            }
+            
+            // Список всех команд
+            const scoresList = document.getElementById('scores-list');
+            scoresList.innerHTML = '<h2 style="text-align:center; margin-bottom:20px;">Итоговая таблица:</h2>';
+            
+            sortedTeams.forEach(([tid, team], index) => {
+                let className = 'score-item';
+                let medal = '';
+                
+                if (index === 0) {
+                    className += ' first';
+                    medal = '🥇 ';
+                } else if (index === 1) {
+                    className += ' second';
+                    medal = '🥈 ';
+                } else if (index === 2) {
+                    className += ' third';
+                    medal = '🥉 ';
+                }
+                
+                scoresList.innerHTML += `
+                    <div class="${className}">
+                        <span class="team-name-result">${medal}${team.name}</span>
+                        <span class="team-score-result">${team.score}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = ['gold', '#f8b400', '#ff6b6b', '#4ecdc4', '#45b7d1'][Math.floor(Math.random() * 5)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 6000);
+                }, i * 30);
+            }
+        }
+
+        function restartGame() {
+            socket.emit('restart_game');
+        }
+
+        function goToLobby() {
+            socket.emit('go_to_lobby');
+        }
+
+        socket.on('redirect_to_lobby', (data) => {
+            window.location.href = data.url;
+        });
+    </script>
+</body>
+</html>
