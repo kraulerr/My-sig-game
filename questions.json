@@ -7,31 +7,41 @@
           "price": 100,
           "text": "С какой птицей этот персонаж перепутал камеру оператора?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_100.png"
+          "media_url": "/static/images/questions/memelniy_100.png",
+          "answer_text": "Попугай",
+          "answer_image": null
         },
         {
           "price": 200,
           "text": "Любимое мужское имя этого персонажа?",
           "media_type": "image",
-          "media_url": "/static/videos/questions/memelniy_200.png"
+          "media_url": "/static/videos/questions/memelniy_200.png",
+          "answer_text": "Андрей",
+          "answer_image": null
         },
         {
           "price": 300,
-          "text": "Кого поздравлял с Днём Рождения  этот персонаж?",
+          "text": "Кого поздравлял с Днём Рождения этот персонаж?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_300.png"
+          "media_url": "/static/images/questions/memelniy_300.png",
+          "answer_text": "Влада",
+          "answer_image": null
         },
         {
           "price": 400,
           "text": "Собака какой породы потерпела ФИАСКО в этом месте",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_400.png"
+          "media_url": "/static/images/questions/memelniy_400.png",
+          "answer_text": "Такса",
+          "answer_image": null
         },
         {
           "price": 500,
           "text": "Рык какого животного показывает этот персонаж?",
           "media_type": "image",
-          "media_url": "/static/images/questions/memelniy_500.png"
+          "media_url": "/static/images/questions/memelniy_500.png",
+          "answer_text": "Тигр",
+          "answer_image": null
         }
       ]
     },
@@ -42,31 +52,41 @@
           "price": 100,
           "text": "Разгадайте ребус",
           "media_type": "image",
-          "media_url": "/static/images/questions/rebusy_100.jpg"
+          "media_url": "/static/images/questions/rebusy_100.jpg",
+          "answer_text": "СНЕГОВИК",
+          "answer_image": "/static/images/answers/rebusy_100_answer.jpg"
         },
         {
           "price": 200,
           "text": "Что зашифровано?",
           "media_type": "image",
-          "media_url": "/static/images/questions/rebusy_200.png"
+          "media_url": "/static/images/questions/rebusy_200.png",
+          "answer_text": "НОВЫЙ ГОД",
+          "answer_image": "/static/images/answers/rebusy_200_answer.png"
         },
         {
           "price": 300,
           "text": "Какое слово загадано?",
           "media_type": "image",
-          "media_url": "/static/images/questions/rebusy_300.jpg"
+          "media_url": "/static/images/questions/rebusy_300.jpg",
+          "answer_text": "ПОДАРОК",
+          "answer_image": "/static/images/answers/rebusy_300_answer.jpg"
         },
         {
           "price": 400,
           "text": "Сложный ребус",
           "media_type": "image",
-          "media_url": "/static/images/questions/rebusy_400.jpg"
+          "media_url": "/static/images/questions/rebusy_400.jpg",
+          "answer_text": "МАНДАРИН",
+          "answer_image": "/static/images/answers/rebusy_400_answer.jpg"
         },
         {
           "price": 500,
           "text": "Супер сложный ребус",
           "media_type": "image",
-          "media_url": "/static/images/questions/rebusy_500.png"
+          "media_url": "/static/images/questions/rebusy_500.png",
+          "answer_text": "СНЕЖИНКА",
+          "answer_image": "/static/images/answers/rebusy_500_answer.png"
         }
       ]
     },
@@ -77,31 +97,41 @@
           "price": 100,
           "text": "Из какого фильма этот кадр?",
           "media_type": "image",
-          "media_url": "/static/images/questions/kadr_100.jpg"
+          "media_url": "/static/images/questions/kadr_100.jpg",
+          "answer_text": "Ирония судьбы",
+          "answer_image": "/static/images/answers/kadr_100_full.jpg"
         },
         {
           "price": 200,
           "text": "Кто этот персонаж?",
           "media_type": "image",
-          "media_url": "/static/images/questions/kadr_200.jpg"
+          "media_url": "/static/images/questions/kadr_200.jpg",
+          "answer_text": "Кевин Маккалистер",
+          "answer_image": "/static/images/answers/kadr_200_full.jpg"
         },
         {
           "price": 300,
           "text": "Из какого сериала?",
           "media_type": "video",
-          "media_url": "/static/videos/questions/kadr_300.mp4"
+          "media_url": "/static/videos/questions/kadr_300.mp4",
+          "answer_text": "Чудеса в Решетове",
+          "answer_image": null
         },
         {
           "price": 400,
           "text": "Назовите фильм",
           "media_type": "image",
-          "media_url": "/static/images/questions/kadr_400.jpg"
+          "media_url": "/static/images/questions/kadr_400.jpg",
+          "answer_text": "Морозко",
+          "answer_image": "/static/images/answers/kadr_400_full.jpg"
         },
         {
           "price": 500,
           "text": "Из какого мультфильма?",
           "media_type": "image",
-          "media_url": "/static/images/questions/kadr_500.jpg"
+          "media_url": "/static/images/questions/kadr_500.jpg",
+          "answer_text": "Снеговик-почтовик",
+          "answer_image": "/static/images/answers/kadr_500_full.jpg"
         }
       ]
     },
@@ -112,31 +142,41 @@
           "price": 100,
           "text": "Какое мифическое существо — наполовину человек, наполовину лошадь — встречается в греческой мифологии?",
           "media_type": "text",
-          "media_url": null
+          "media_url": null,
+          "answer_text": "Кентавр",
+          "answer_image": null
         },
         {
           "price": 200,
           "text": "Сколько лет проходит, прежде чем символ Лошади снова возвращается в китайском календаре?",
           "media_type": "text",
-          "media_url": null
+          "media_url": null,
+          "answer_text": "12 лет",
+          "answer_image": null
         },
         {
           "price": 300,
           "text": "Как называется мультфильм о мустанге, который стремился сохранить свободу и стал символом дикой прерии?",
           "media_type": "text",
-          "media_url": null
+          "media_url": null,
+          "answer_text": "Спирит: Душа прерий",
+          "answer_image": null
         },
         {
           "price": 400,
           "text": "Вспомните 4 песни с упоминанием лошадей. Кроме «Три белых коня» это слишком очевидно",
           "media_type": "text",
-          "media_url": null
+          "media_url": null,
+          "answer_text": "Примеры: Кони в яблоках, Белая лошадь, Лошадка, Кони привередливые",
+          "answer_image": null
         },
         {
           "price": 500,
           "text": "На эмблеме какого немецкого автопроизводителя изображён конь, вздыбившийся на задние ноги, а сам логотип связан с гербом города Штутгарта?",
           "media_type": "text",
-          "media_url": null
+          "media_url": null,
+          "answer_text": "Porsche",
+          "answer_image": null
         }
       ]
     },
@@ -147,31 +187,41 @@
           "price": 100,
           "text": "Какая песня играет?",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/meloman_100.mp3"
+          "media_url": "/static/audio/questions/meloman_100.mp3",
+          "answer_text": "Jingle Bells",
+          "answer_image": null
         },
         {
           "price": 200,
           "text": "Кто исполнитель?",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/meloman_200.mp3"
+          "media_url": "/static/audio/questions/meloman_200.mp3",
+          "answer_text": "Элвис Пресли",
+          "answer_image": null
         },
         {
           "price": 300,
           "text": "Из какого фильма эта музыка?",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/meloman_300.mp3"
+          "media_url": "/static/audio/questions/meloman_300.mp3",
+          "answer_text": "Один дома",
+          "answer_image": null
         },
         {
           "price": 400,
           "text": "Назовите композитора",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/meloman_400.mp3"
+          "media_url": "/static/audio/questions/meloman_400.mp3",
+          "answer_text": "Пётр Ильич Чайковский",
+          "answer_image": null
         },
         {
           "price": 500,
           "text": "Из какого года эта песня?",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/meloman_500.mp3"
+          "media_url": "/static/audio/questions/meloman_500.mp3",
+          "answer_text": "1984",
+          "answer_image": null
         }
       ]
     },
@@ -182,35 +232,43 @@
           "price": 100,
           "text": "Посмотрите фрагмент мюзикла «Золушка» 2002 года и определите какое слово из диалога было пропущено",
           "media_type": "video",
-          "media_url": "/static/videos/questions/nostalgia_100.mp4"
+          "media_url": "/static/videos/questions/nostalgia_100.mp4",
+          "answer_text": "Встретимся",
+          "answer_image": null
         },
         {
           "price": 200,
           "text": "Посмотрите видео и ответьте на вопрос. Что сделает дед мороз после встречи с неожиданными гостями?",
           "media_type": "video",
-          "media_url": "/static/videos/questions/nostalgia_200.mp4"
+          "media_url": "/static/videos/questions/nostalgia_200.mp4",
+          "answer_text": "Включит музыку",
+          "answer_image": null
         },
         {
           "price": 300,
           "text": "В какой рекламе начала 2000-х годов герои начинают с уютного семейного вечера с чтением сказки, но затем волшебным образом переносятся в яркую праздничную обстановку?",
           "media_type": "video",
-          "media_url": "/static/videos/questions/nostalgia_300.mp4"
+          "media_url": "/static/videos/questions/nostalgia_300.mp4",
+          "answer_text": "Coca-Cola",
+          "answer_image": null
         },
         {
           "price": 400,
           "text": "Посмотрите музыкальный фрагмент и определите, кто является партнером Виктории Дайнеко на новогоднюю пародию фильма «Мистер и Миссис Смит»",
           "media_type": "video",
-          "media_url": "/static/videos/questions/nostalgia_400.mp4"
+          "media_url": "/static/videos/questions/nostalgia_400.mp4",
+          "answer_text": "Филипп Киркоров",
+          "answer_image": null
         },
         {
           "price": 500,
           "text": "Послушайте и угадайте песню. Все просто!",
           "media_type": "audio",
-          "media_url": "/static/audio/questions/nostalgia_500.mp3"
+          "media_url": "/static/audio/questions/nostalgia_500.mp3",
+          "answer_text": "В лесу родилась ёлочка",
+          "answer_image": null
         }
       ]
     }
   ]
 }
-
-
