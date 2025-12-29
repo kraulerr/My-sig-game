@@ -334,6 +334,9 @@
                 const cell = document.querySelector(`[data-cat="${cat}"][data-price="${price}"]`);
                 if (cell) cell.classList.add('cell-disabled');
             });
+            
+            // Проверяем, закончилась ли игра
+            socket.emit('check_game_finished');
         });
 
         function renderTeams(teams, admins) {
@@ -489,6 +492,16 @@
             document.getElementById('team-select').style.display = 'flex';
             
             document.querySelectorAll('.team-card').forEach(t => t.classList.remove('active'));
+        });
+
+        socket.on('game_finished', (data) => {
+            setTimeout(() => {
+                window.location.href = data.url;
+            }, 2000);
+        });
+
+        socket.on('redirect_to_game', (data) => {
+            window.location.href = data.url;
         });
     </script>
 </body>
