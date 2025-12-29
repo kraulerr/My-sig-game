@@ -6,26 +6,30 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ny2025-secret'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-PLAYERS = {}  # name -> {sid, avatar, team_id, is_admin}
-TEAMS = {}  # team_id -> {members: [names], score}
+PLAYERS = {} # name -> {sid, avatar, team_id, is_admin}
+TEAMS = {} # team_id -> {members: [names], score}
 DISABLED_CELLS = set()
 ACTIVE_QUESTION = {'category': None, 'price': 0, 'team_id': None}
 
 @app.route('/')
-def index(): return render_template('index.html')
+def index(): 
+    return render_template('index.html')
 
 @app.route('/lobby')
-def lobby(): return render_template('lobby.html')
+def lobby(): 
+    return render_template('lobby.html')
 
 @app.route('/game')
-def game(): return render_template('board.html')
+def game(): 
+    return render_template('board.html')
 
 @app.route('/questions')
 def get_questions():
     try:
         with open('questions.json', 'r', encoding='utf-8') as f:
             return jsonify(json.load(f))
-    except: return jsonify({"categories": []})
+    except: 
+        return jsonify({"categories": []})
 
 def get_all_admin_sids():
     """Возвращает список всех SID админов"""
@@ -34,7 +38,6 @@ def get_all_admin_sids():
 def broadcast_lobby():
     teams_data = {}
     for tid, t in TEAMS.items():
-        # В лобби НЕ показываем название команды и аватар
         teams_data[tid] = {
             'members': t['members'],
             'score': t['score']
@@ -58,7 +61,6 @@ def broadcast_game():
     """Отправляет данные на игровое поле"""
     teams_data = {}
     for tid, t in TEAMS.items():
-        # Вычисляем название и аватар команды ТОЛЬКО на доске
         team_name, team_avatar = get_team_name_and_avatar(tid)
         teams_data[tid] = {
             'name': team_name,
@@ -66,7 +68,6 @@ def broadcast_game():
             'score': t['score']
         }
     
-    # Список админов для отдельного отображения
     admins_data = []
     for name, p in PLAYERS.items():
         if p.get('is_admin'):
@@ -90,7 +91,6 @@ def get_team_name_and_avatar(team_id):
     if not avatars:
         return f'Команда {team_id[-1]}', 'team_default.png'
     
-    # Подсчитываем самый частый аватар
     counts = {}
     for av in avatars:
         counts[av] = counts.get(av, 0) + 1
@@ -113,7 +113,7 @@ def handle_join(data):
             'sid': request.sid,
             'avatar': data.get('avatar', '1.png'),
             'team_id': None,
-            'is_admin': len(PLAYERS) == 0  # Первый игрок = админ
+            'is_admin': len(PLAYERS) == 0
         }
     broadcast_lobby()
 
@@ -139,12 +139,10 @@ def handle_assign(data):
     player_name = data['player_name']
     team_id = data['team_id']
     
-    # Удалить из старой команды
     old_team = PLAYERS[player_name].get('team_id')
     if old_team and old_team in TEAMS:
         TEAMS[old_team]['members'].remove(player_name)
     
-    # Добавить в новую
     PLAYERS[player_name]['team_id'] = team_id
     if team_id:
         TEAMS[team_id]['members'].append(player_name)
@@ -157,7 +155,6 @@ def handle_make_admin(data):
     player_name = data['player_name']
     if player_name in PLAYERS:
         PLAYERS[player_name]['is_admin'] = True
-        # Убираем админа из команды игроков
         old_team = PLAYERS[player_name].get('team_id')
         if old_team and old_team in TEAMS:
             TEAMS[old_team]['members'].remove(player_name)
@@ -193,11 +190,36 @@ def handle_team_answer(data):
 
 @socketio.on('submit_answer')
 def handle_submit(data):
-    if data['correct'] and ACTIVE_QUESTION['team_id']:
-        TEAMS[ACTIVE_QUESTION['team_id']]['score'] += ACTIVE_QUESTION['price']
+    """Обработка ответа команды"""
+    team_id = ACTIVE_QUESTION['team_id']
+    price = ACTIVE_QUESTION['price']
     
+    if team_id and team_id in TEAMS:
+        if data['correct']:
+            # Правильный ответ → +баллы + закрываем вопрос
+            TEAMS[team_id]['score'] += price
+            print(f"✅ Команда {team_id} получила +{price} баллов")
+            
+            # Закрываем ячейку
+            cell = (ACTIVE_QUESTION['category'], price)
+            DISABLED_CELLS.add(cell)
+            
+            # Сбрасываем активный вопрос
+            ACTIVE_QUESTION.update({'category': None, 'price': 0, 'team_id': None})
+        else:
+            # Неправильный ответ → только сбрасываем команду
+            print(f"❌ Команда {team_id} ответила неправильно")
+            
+            # Сбрасываем только текущую команду (вопрос остается активным)
+            ACTIVE_QUESTION['team_id'] = None
+    
+    # Останавливаем таймер
     socketio.emit('timer_stop', {})
-    ACTIVE_QUESTION.update({'category': None, 'price': 0, 'team_id': None})
+    
+    # Закрываем модалку с вопросом
+    socketio.emit('close_question_modal', {})
+    
+    # Обновляем данные на доске
     broadcast_game()
 
 if __name__ == '__main__':
